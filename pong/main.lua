@@ -68,13 +68,12 @@ function initPaddles(reset)
 end
 
 function love.load()
-    love.window.setTitle("Pong")
     math.randomseed(os.time())
     initPaddles(true)
 end
 
 function love.resize()
-    initPaddles(false)
+    initPaddles(not started)
 end
 
 function love.update(dt)
