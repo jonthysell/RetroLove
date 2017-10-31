@@ -10,6 +10,7 @@
     param ([string]$scriptDir)
     
     Write-Host "Building pong.love..."
+    Remove-Item -Recurse -Force "$scriptDir\build" | Out-Null
     New-Item "$scriptDir\build" -Type directory -Force | Out-Null
     Compress-Archive -Path "$scriptDir\*.lua" -DestinationPath "$scriptDir\build\pong.zip" -CompressionLevel "Optimal" -Force | Out-Null
     Rename-Item -Path "$scriptDir\build\pong.zip" -NewName "pong.love" -Force | Out-Null
