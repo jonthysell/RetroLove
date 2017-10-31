@@ -78,13 +78,17 @@ function getInput()
     end
     
     if love.touch then
+        local screenWidth = love.graphics.getWidth()
+        local screenHeight = love.graphics.getHeight()
         local touches = love.touch.getTouches()
         for i, id in ipairs(touches) do
             local x, y = love.touch.getPosition(id)
-            if y < love.graphics.getHeight() / 2 then
-                return "up"
-            else
-                return "down"
+            if x <= screenWidth * .4 or x >= screenWidth * .6 then
+                if y < screenHeight / 2 then
+                    return "up"
+                else
+                    return "down"
+                end
             end
         end
     end
@@ -97,6 +101,19 @@ function love.keyreleased(key)
         love.event.quit()
     elseif key == "d" then
         debugMode = not debugMode
+    end
+end
+
+function love.touchreleased(id, x, y, dx, dy, pressure)
+    local screenWidth = love.graphics.getWidth()
+    local screenHeight = love.graphics.getHeight()
+    
+    if x > screenWidth * .4 and x < screenWidth * .6 then
+        if y > screenHeight / 2 then
+            love.event.quit()
+        else
+            debugMode = not debugMode
+        end
     end
 end
 
@@ -205,8 +222,8 @@ function love.draw()
     love.graphics.clear()
 
     -- Draw score
-    love.graphics.print(left.score, (resWidth / 2) - (ballSize * 2), ballSize / 2)
-    love.graphics.print(right.score, (resWidth / 2) + ballSize, ballSize / 2)
+    love.graphics.print(left.score, (resWidth * .25) - (ballSize * 2), ballSize / 2)
+    love.graphics.print(right.score, (resWidth * .75) + ballSize, ballSize / 2)
     
     -- Draw paddles
     love.graphics.rectangle("fill", left.x, left.y, paddleWidth, paddleHeight)
@@ -220,9 +237,12 @@ function love.draw()
        love.graphics.print("FPS: "..tostring(love.timer.getFPS()), resWidth - 60, resHeight - 20)
     end
     
+    local screenWidth = love.graphics.getWidth()
+    local screenHeight = love.graphics.getHeight()
+    
     -- Draw canvas to screen
     love.graphics.setCanvas()
     
-    scale = math.min(love.graphics.getWidth() / resWidth, love.graphics.getHeight() / resHeight)
-    love.graphics.draw(canvas, (love.graphics.getWidth() - resWidth * scale) / 2, (love.graphics.getHeight() - resHeight * scale) / 2, 0, scale, scale)
+    scale = math.min(screenWidth / resWidth, screenHeight / resHeight)
+    love.graphics.draw(canvas, (screenWidth - resWidth * scale) / 2, (screenHeight - resHeight * scale) / 2, 0, scale, scale)
 end
