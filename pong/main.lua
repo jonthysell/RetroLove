@@ -70,6 +70,28 @@ function initPaddles(reset)
     end
 end
 
+function getInput()
+    if love.keyboard.isDown("down") then
+        return "down"
+    elseif love.keyboard.isDown("up") then
+        return "up"
+    end
+    
+    if love.touch then
+        local touches = love.touch.getTouches()
+        for i, id in ipairs(touches) do
+            local x, y = love.touch.getPosition(id)
+            if y < love.graphics.getHeight() / 2 then
+                return "up"
+            else
+                return "down"
+            end
+        end
+    end
+    
+    return nil
+end
+
 function love.keyreleased(key)
     if key == "q" or key == "escape" then
         love.event.quit()
@@ -85,16 +107,18 @@ function love.load()
 end
 
 function love.update(dt)
+    input = getInput()
+    
     if not started then
-        if love.keyboard.isDown("down") or love.keyboard.isDown("up") then
+        if input then
             started = true
         end
     else
         -- Process input for left
-        if love.keyboard.isDown("down") then
+        if input == "down" then
             left.y = left.y + (paddleHeight * paddleSpeed * dt)
             left.moving = true
-        elseif love.keyboard.isDown("up") then
+        elseif input == "up" then
             left.y = left.y - (paddleHeight * paddleSpeed * dt)
             left.moving = true
         else
