@@ -26,7 +26,7 @@ ball = {
     dy = 0
 }
 
-paddleSpeed = 20
+paddleSpeed = 2
 ballSpeed = 0.5
 
 paddleBounce = 1.1
