@@ -1,3 +1,6 @@
+resWidth = 320
+resHeight = 240
+
 paddleHeight = 0
 paddleWidth = 0
 ballSize = 0
@@ -23,7 +26,7 @@ ball = {
     dy = 0
 }
 
-paddleSpeed = 3
+paddleSpeed = 20
 ballSpeed = 0.5
 
 paddleBounce = 1.1
@@ -35,8 +38,8 @@ started = false
 debugMode = false
 
 function resetBall()
-    ball.x = (love.graphics.getWidth() - ballSize) / 2
-    ball.y = (love.graphics.getHeight() - ballSize) / 2
+    ball.x = (resWidth - ballSize) / 2
+    ball.y = (resHeight - ballSize) / 2
     
     ball.dx = 0.5 + 0.5 * math.random()
     if math.random() > 0.5 then ball.dx = -ball.dx end
@@ -45,19 +48,19 @@ function resetBall()
 end
 
 function initPaddles(reset)
-    paddleHeight = love.graphics.getHeight() * 0.2
-    paddleWidth = love.graphics.getWidth() * 0.0125
+    paddleHeight = resHeight * 0.2
+    paddleWidth = resWidth * 0.0125
     ballSize = paddleWidth
     
     left.x = paddleWidth
-    right.x = love.graphics.getWidth() - 2 * paddleWidth
+    right.x = resWidth - 2 * paddleWidth
     
     if reset then
-        left.y = (love.graphics.getHeight() - paddleHeight) / 2
+        left.y = (resHeight - paddleHeight) / 2
         left.moving = false
         left.score = 0
         
-        right.y = (love.graphics.getHeight() - paddleHeight) / 2
+        right.y = (resHeight - paddleHeight) / 2
         right.moving = false
         right.score = 0
         
@@ -67,23 +70,21 @@ function initPaddles(reset)
     end
 end
 
+function love.keyreleased(key)
+    if key == "q" or key == "escape" then
+        love.event.quit()
+    elseif key == "d" then
+        debugMode = not debugMode
+    end
+end
+
 function love.load()
     math.randomseed(os.time())
     initPaddles(true)
-end
-
-function love.resize()
-    initPaddles(not started)
+    canvas = love.graphics.newCanvas(resWidth, resHeight)
 end
 
 function love.update(dt)
-    if love.keyboard.isDown("q") then
-        love.window.close()
-    elseif love.keyboard.isDown("d") then
-        debugMode = not debugMode
-        love.timer.sleep(0.10)
-    end
-    
     if not started then
         if love.keyboard.isDown("down") or love.keyboard.isDown("up") then
             started = true
@@ -115,23 +116,23 @@ function love.update(dt)
         
         -- Process paddle bounds
         left.y = math.max(left.y, ballSize / 2)
-        left.y = math.min(left.y, love.graphics.getHeight() - paddleHeight - (ballSize / 2))
+        left.y = math.min(left.y, resHeight - paddleHeight - (ballSize / 2))
         right.y = math.max(right.y, ballSize / 2)
-        right.y = math.min(right.y, love.graphics.getHeight() - paddleHeight - (ballSize / 2))
+        right.y = math.min(right.y, resHeight - paddleHeight - (ballSize / 2))
         
         -- Process ball movement
         ball.dx = math.min(1, math.max(ball.dx, -1))
         ball.dy = math.min(1, math.max(ball.dy, -1))
         
-        ball.x = ball.x + (ball.dx * ballSpeed * math.min(love.graphics.getHeight(), love.graphics.getWidth()) * dt)
-        ball.y = ball.y + (ball.dy * ballSpeed * math.min(love.graphics.getHeight(), love.graphics.getWidth()) * dt)
+        ball.x = ball.x + (ball.dx * ballSpeed * math.min(resHeight, resWidth) * dt)
+        ball.y = ball.y + (ball.dy * ballSpeed * math.min(resHeight, resWidth) * dt)
         
         -- Process wall/ball collisions
         if ball.y < 0 then
             ball.y = 0
             ball.dy = -ball.dy
-        elseif ball.y > love.graphics.getHeight() - ballSize then
-            ball.y = love.graphics.getHeight() - ballSize
+        elseif ball.y > resHeight - ballSize then
+            ball.y = resHeight - ballSize
             ball.dy = -ball.dy
         end
         
@@ -160,7 +161,7 @@ function love.update(dt)
                     ball.dx = ball.dx * paddleBounce
                     ball.dy = ball.dy * paddleBounce
                 end
-            elseif ball.x >= love.graphics.getWidth() then
+            elseif ball.x >= resWidth then
                 -- right misses ball
                 left.score = left.score + 1
                 resetBall()
@@ -174,9 +175,14 @@ function love.update(dt)
 end
 
 function love.draw()
+    -- Draw to canvas
+    love.graphics.setCanvas(canvas)
+    
+    love.graphics.clear()
+
     -- Draw score
-    love.graphics.print(left.score, (love.graphics.getWidth() / 2) - (ballSize * 2), ballSize / 2)
-    love.graphics.print(right.score, (love.graphics.getWidth() / 2) + ballSize, ballSize / 2)
+    love.graphics.print(left.score, (resWidth / 2) - (ballSize * 2), ballSize / 2)
+    love.graphics.print(right.score, (resWidth / 2) + ballSize, ballSize / 2)
     
     -- Draw paddles
     love.graphics.rectangle("fill", left.x, left.y, paddleWidth, paddleHeight)
@@ -187,6 +193,12 @@ function love.draw()
     
     -- Draw Debug Info
     if debugMode then
-       love.graphics.print("FPS: "..tostring(love.timer.getFPS()), love.graphics.getWidth() - 60, love.graphics.getHeight() - 20)
+       love.graphics.print("FPS: "..tostring(love.timer.getFPS()), resWidth - 60, resHeight - 20)
     end
+    
+    -- Draw canvas to screen
+    love.graphics.setCanvas()
+    
+    scale = math.min(love.graphics.getWidth() / resWidth, love.graphics.getHeight() / resHeight)
+    love.graphics.draw(canvas, (love.graphics.getWidth() - resWidth * scale) / 2, (love.graphics.getHeight() - resHeight * scale) / 2, 0, scale, scale)
 end
