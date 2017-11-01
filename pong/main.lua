@@ -121,6 +121,10 @@ function love.load()
     math.randomseed(os.time())
     initPaddles(true)
     canvas = love.graphics.newCanvas(resWidth, resHeight)
+    
+    bounceSFX = love.audio.newSource("bounce.ogg", "static")
+    hitSFX = love.audio.newSource("hit.ogg", "static")
+    scoreSFX = love.audio.newSource("score.ogg", "static")
 end
 
 function love.update(dt)
@@ -170,9 +174,11 @@ function love.update(dt)
         
         -- Process wall/ball collisions
         if ball.y < 0 then
+            love.audio.play(bounceSFX)
             ball.y = 0
             ball.dy = -ball.dy
         elseif ball.y > resHeight - ballSize then
+            love.audio.play(bounceSFX)
             ball.y = resHeight - ballSize
             ball.dy = -ball.dy
         end
@@ -181,6 +187,7 @@ function love.update(dt)
             -- ball is crossing into left
             if ball.x > left.x and ball.y > left.y - ballSize and ball.y < left.y + paddleHeight then
                 -- left hits ball
+                love.audio.play(hitSFX)
                 ball.x = left.x + paddleWidth
                 ball.dx = -ball.dx
                 if left.moving then
@@ -189,6 +196,7 @@ function love.update(dt)
                 end
             elseif ball.x + ballSize <= 0 then
                 -- left misses ball
+                love.audio.play(scoreSFX)
                 right.score = right.score + 1
                 resetBall()
             end
@@ -196,6 +204,7 @@ function love.update(dt)
             -- ball is crossing into right
             if ball.x + ballSize < right.x + paddleWidth and ball.y > right.y - ballSize and ball.y < right.y + paddleHeight then
                 -- right hits ball
+                love.audio.play(hitSFX)
                 ball.x = right.x - ballSize
                 ball.dx = -ball.dx
                 if right.moving then
@@ -204,6 +213,7 @@ function love.update(dt)
                 end
             elseif ball.x >= resWidth then
                 -- right misses ball
+                love.audio.play(scoreSFX)
                 left.score = left.score + 1
                 resetBall()
             end
