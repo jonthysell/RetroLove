@@ -1,3 +1,6 @@
+-- pong\conf.lua
+-- Copyright (c) 2017 Jon Thysell
+
 function love.conf(t)
     t.window.title = "Pong"
     t.window.resizable = true

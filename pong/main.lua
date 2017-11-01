@@ -1,73 +1,54 @@
+-- pong\main.lua
+-- Copyright (c) 2017 Jon Thysell
+
 resWidth = 320
 resHeight = 240
 
-paddleHeight = 0
-paddleWidth = 0
-ballSize = 0
-
-left = {
-    x = 0,
-    y = 0,
-    moving = false,
-    score = 0
-}
-
-right = {
-    x = 0,
-    y = 0,
-    moving = false,
-    score = 0
-}
-
-ball = {
-    x = 0,
-    y = 0,
-    dx = 0,
-    dy = 0
-}
+scoreToWin = 10
 
 paddleSpeed = 2
 ballSpeed = 0.5
 
 paddleBounce = 1.1
 
-scoreToWin = 10
-
 started = false
-
 debugMode = false
 
+screenWidth = love.graphics.getWidth()
+screenHeight = love.graphics.getHeight()
+
 function resetBall()
-    ball.x = (resWidth - ballSize) / 2
-    ball.y = (resHeight - ballSize) / 2
-    
-    ball.dx = 0.5 + 0.5 * math.random()
+    ball = {
+        x = (resWidth - ballSize) / 2,
+        y = (resHeight - ballSize) / 2,
+        dx = 0.5 + 0.1 * math.random(),
+        dy = 0.5 + 0.1 * math.random()
+    }
+
     if math.random() > 0.5 then ball.dx = -ball.dx end
-    ball.dy = 0.5 + 0.5 * math.random()
     if math.random() > 0.5 then ball.dy = -ball.dy end
 end
 
-function initPaddles(reset)
+function resetPaddles()
     paddleHeight = resHeight * 0.2
     paddleWidth = resWidth * 0.0125
     ballSize = paddleWidth
     
-    left.x = paddleWidth
-    right.x = resWidth - 2 * paddleWidth
+    left = {
+        x = paddleWidth,
+        y = (resHeight - paddleHeight) / 2,
+        moving = false,
+        score = 0,
+    }
     
-    if reset then
-        left.y = (resHeight - paddleHeight) / 2
-        left.moving = false
-        left.score = 0
-        
-        right.y = (resHeight - paddleHeight) / 2
-        right.moving = false
-        right.score = 0
-        
-        resetBall()
-        
-        started = false
-    end
+    right = {
+        x = resWidth - 2 * paddleWidth,
+        y = (resHeight - paddleHeight) / 2,
+        moving = false,
+        score = 0,
+    }
+    
+    started = false
 end
 
 function getInput()
@@ -78,8 +59,6 @@ function getInput()
     end
     
     if love.touch then
-        local screenWidth = love.graphics.getWidth()
-        local screenHeight = love.graphics.getHeight()
         local touches = love.touch.getTouches()
         for i, id in ipairs(touches) do
             local x, y = love.touch.getPosition(id)
@@ -105,9 +84,6 @@ function love.keyreleased(key)
 end
 
 function love.touchreleased(id, x, y, dx, dy, pressure)
-    local screenWidth = love.graphics.getWidth()
-    local screenHeight = love.graphics.getHeight()
-    
     if x > screenWidth * .4 and x < screenWidth * .6 then
         if y > screenHeight / 2 then
             love.event.quit()
@@ -119,12 +95,21 @@ end
 
 function love.load()
     math.randomseed(os.time())
-    initPaddles(true)
+    resetPaddles()
+    resetBall()
+    
+    -- Init offscreen graphics
     canvas = love.graphics.newCanvas(resWidth, resHeight)
     
+    -- Init sounds
     bounceSFX = love.audio.newSource("bounce.ogg", "static")
     hitSFX = love.audio.newSource("hit.ogg", "static")
     scoreSFX = love.audio.newSource("score.ogg", "static")
+end
+
+function love.resize()
+    screenWidth = love.graphics.getWidth()
+    screenHeight = love.graphics.getHeight()
 end
 
 function love.update(dt)
@@ -220,7 +205,7 @@ function love.update(dt)
         end
         
         if left.score == scoreToWin or right.score == scoreToWin then
-            initPaddles(true)
+            resetPaddles()
         end
     end
 end
@@ -230,6 +215,9 @@ function love.draw()
     love.graphics.setCanvas(canvas)
     
     love.graphics.clear()
+    
+    -- Draw border
+    love.graphics.rectangle("line", 1, 1, resWidth - 2, resHeight - 2);
 
     -- Draw score
     love.graphics.print(left.score, (resWidth * .25) - (ballSize * 2), ballSize / 2)
@@ -246,9 +234,6 @@ function love.draw()
     if debugMode then
        love.graphics.print("FPS: "..tostring(love.timer.getFPS()), resWidth - 60, resHeight - 20)
     end
-    
-    local screenWidth = love.graphics.getWidth()
-    local screenHeight = love.graphics.getHeight()
     
     -- Draw canvas to screen
     love.graphics.setCanvas()
