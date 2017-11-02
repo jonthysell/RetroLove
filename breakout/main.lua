@@ -62,6 +62,47 @@ function resetGame()
     resetRound()
 end
 
+function ballHitsBlock(row, col)
+    local x, y = margin + (col - 1) * blockWidth, margin + (numRowsOfBlocks - row + 1) * blockHeight
+    
+    -- Find intersection
+    local ix1 = math.max(ball.x, x)
+    local iy1 = math.max(ball.y, y)
+    local ix2 = math.min(ball.x + ballSize, x + blockWidth)
+    local iy2 = math.min(ball.y + ballSize, y + blockHeight)
+    
+    local hit = false
+    
+    if ix1 < ix2 and iy1 < iy2 then
+        -- Valid intersection
+        if ix1 > ball.x then
+            -- ball hit left
+            ball.x = x - ballSize
+            ball.dx = -ball.dx
+            hit = true
+        elseif ix2 < ball.x + ballSize then
+            -- ball hit right
+            ball.x = x + blockWidth
+            ball.dx = -ball.dx
+            hit = true
+        end
+        
+        if iy1 > ball.y then
+            -- ball hit top
+            ball.y = y - ballSize
+            ball.dy = -ball.dy
+            hit = true
+        elseif iy2 < ball.y + ballSize then
+            -- ball hit bottom
+            ball.y = y + blockHeight
+            ball.dy = -ball.dy
+            hit = true
+        end
+    end
+    
+    return hit
+end
+
 function gameOverCheck()
     if paddle.lives >= 0 then
         for row = 1, numRowsOfBlocks do
@@ -177,13 +218,10 @@ function love.update(dt)
         for row = 1, numRowsOfBlocks do
             for col = 1, numBlocksPerRow do
                 if blocks[row][col] then
-                    local x, y = margin + (col - 1) * blockWidth, margin + (numRowsOfBlocks - row + 1) * blockHeight
-                    if ball.x + ballSize > x and ball.x < x + blockWidth and ball.y + ballSize > y and ball.y < y + blockHeight then
+                    local hit = ballHitsBlock(row, col)
+                    if hit then
                         blocks[row][col] = false
                         blockHit = row
-                        
-                        -- Bounce the ball apropriately
-                        
                         break
                     end
                 end
