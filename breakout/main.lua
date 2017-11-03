@@ -14,6 +14,13 @@ paddleBounce = 1.1
 numRowsOfBlocks = 4
 numBlocksPerRow = 10
 
+blockColors = {
+    {0, 255, 0}, -- green
+    {255, 255, 0}, -- yellow
+    {255, 102, 0}, -- orange
+    {255, 0, 0}, -- red
+}
+
 started = false
 debugMode = false
 
@@ -243,7 +250,7 @@ function love.update(dt)
             -- ball is crossing into bottom
             if ball.x + ballSize > paddle.x and ball.x < paddle.x + paddleWidth then
                 -- paddle hits ball
-                love.audio.play(hitSFX)
+                love.audio.play(bounceSFX)
                 ball.y = paddle.y - ballSize
                 ball.dy = -ball.dy
                 if paddle.moving then
@@ -292,12 +299,15 @@ function love.draw()
     -- Draw blocks
     for row = 1, numRowsOfBlocks do
         for col = 1, numBlocksPerRow do
+            love.graphics.setColor(blockColors[row])
             if blocks[row][col] then
                 local x, y = margin + (col - 1) * blockWidth, margin + (numRowsOfBlocks - row + 1) * blockHeight
                 love.graphics.rectangle("fill", x, y, blockWidth, blockHeight)
             end
         end
     end
+    
+    love.graphics.setColor(255, 255, 255, 255)
     
     -- Draw Debug Info
     if debugMode then
