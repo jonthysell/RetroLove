@@ -168,6 +168,8 @@ function love.load()
     
     -- Init offscreen graphics
     canvas = love.graphics.newCanvas(resWidth, resHeight)
+    canvas:setFilter("nearest", "nearest", 0)
+    love.graphics.setFont(love.graphics.newFont(margin * .7))
     
     -- Init sounds
     bounceSFX = love.audio.newSource("bounce.ogg", "static")
@@ -278,12 +280,12 @@ function love.draw()
     love.graphics.clear()
     
     -- Draw border
-    love.graphics.rectangle("line", margin, margin, resWidth - 2 * margin, resHeight - 2 * margin);
+    love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
 
     local font = love.graphics.getFont()
     
     -- Draw score
-    local scoreText = "Score: "..tostring(paddle.score)
+    local scoreText = tostring(paddle.score)
     love.graphics.print(scoreText, (resWidth - font:getWidth(scoreText)) / 2, ballSize / 2)
     
     -- Draw lives

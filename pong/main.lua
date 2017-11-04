@@ -4,6 +4,8 @@
 resWidth = 320
 resHeight = 240
 
+margin = 20
+
 scoreToWin = 10
 
 paddleSpeed = 2
@@ -35,14 +37,14 @@ function resetPaddles()
     ballSize = paddleWidth
     
     left = {
-        x = paddleWidth,
+        x = paddleWidth + margin,
         y = (resHeight - paddleHeight) / 2,
         moving = false,
         score = 0,
     }
     
     right = {
-        x = resWidth - 2 * paddleWidth,
+        x = resWidth - (2 * paddleWidth + margin),
         y = (resHeight - paddleHeight) / 2,
         moving = false,
         score = 0,
@@ -100,6 +102,8 @@ function love.load()
     
     -- Init offscreen graphics
     canvas = love.graphics.newCanvas(resWidth, resHeight)
+    canvas:setFilter("nearest", "nearest", 0)
+    love.graphics.setFont(love.graphics.newFont(margin * .7))
     
     -- Init sounds
     bounceSFX = love.audio.newSource("bounce.ogg", "static")
@@ -145,10 +149,10 @@ function love.update(dt)
         end
         
         -- Process paddle bounds
-        left.y = math.max(left.y, ballSize / 2)
-        left.y = math.min(left.y, resHeight - paddleHeight - (ballSize / 2))
-        right.y = math.max(right.y, ballSize / 2)
-        right.y = math.min(right.y, resHeight - paddleHeight - (ballSize / 2))
+        left.y = math.max(left.y, margin)
+        left.y = math.min(left.y, resHeight - paddleHeight - margin)
+        right.y = math.max(right.y, margin)
+        right.y = math.min(right.y, resHeight - paddleHeight - margin)
         
         -- Process ball movement
         ball.dx = math.min(1, math.max(ball.dx, -1))
@@ -158,13 +162,13 @@ function love.update(dt)
         ball.y = ball.y + (ball.dy * ballSpeed * math.min(resHeight, resWidth) * dt)
         
         -- Process wall/ball collisions
-        if ball.y < 0 then
+        if ball.y < margin then
             love.audio.play(bounceSFX)
-            ball.y = 0
+            ball.y = margin
             ball.dy = -ball.dy
-        elseif ball.y > resHeight - ballSize then
+        elseif ball.y > resHeight - ballSize - margin then
             love.audio.play(bounceSFX)
-            ball.y = resHeight - ballSize
+            ball.y = resHeight - ballSize - margin
             ball.dy = -ball.dy
         end
         
@@ -179,7 +183,7 @@ function love.update(dt)
                     ball.dx = ball.dx * paddleBounce
                     ball.dy = ball.dy * paddleBounce
                 end
-            elseif ball.x + ballSize <= 0 then
+            elseif ball.x + ballSize <= margin then
                 -- left misses ball
                 love.audio.play(scoreSFX)
                 right.score = right.score + 1
@@ -196,7 +200,7 @@ function love.update(dt)
                     ball.dx = ball.dx * paddleBounce
                     ball.dy = ball.dy * paddleBounce
                 end
-            elseif ball.x >= resWidth then
+            elseif ball.x >= resWidth - margin then
                 -- right misses ball
                 love.audio.play(scoreSFX)
                 left.score = left.score + 1
@@ -217,11 +221,15 @@ function love.draw()
     love.graphics.clear()
     
     -- Draw border
-    love.graphics.rectangle("line", 1, 1, resWidth - 2, resHeight - 2);
+    love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
+    
+    local font = love.graphics.getFont()
 
     -- Draw score
-    love.graphics.print(left.score, (resWidth * .25) - (ballSize * 2), ballSize / 2)
-    love.graphics.print(right.score, (resWidth * .75) + ballSize, ballSize / 2)
+    local leftScoreText = tostring(left.score)
+    love.graphics.print(leftScoreText, (resWidth * .25) - (font:getWidth(leftScoreText)/ 2), ballSize / 2)
+    local rightScoreText = tostring(right.score)
+    love.graphics.print(rightScoreText, (resWidth * .75) - (font:getWidth(rightScoreText)/ 2), ballSize / 2)
     
     -- Draw paddles
     love.graphics.rectangle("fill", left.x, left.y, paddleWidth, paddleHeight)
@@ -232,7 +240,8 @@ function love.draw()
     
     -- Draw Debug Info
     if debugMode then
-       love.graphics.print("FPS: "..tostring(love.timer.getFPS()), resWidth - 60, resHeight - 20)
+        local fpsText = "FPS: "..tostring(love.timer.getFPS())
+       love.graphics.print(fpsText, resWidth - (font:getWidth(fpsText) + margin / 4), resHeight - margin + ((margin - font:getHeight(fpsText)) / 2))
     end
     
     -- Draw canvas to screen
