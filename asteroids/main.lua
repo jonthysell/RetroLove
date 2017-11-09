@@ -6,11 +6,28 @@ resHeight = 240
 
 margin = 20
 
+thrustSpeed = 2
+maxThrustMultiplier = 3
+rotateSpeed = math.rad(90)
+
 started = false
 debugMode = false
 
 screenWidth = love.graphics.getWidth()
 screenHeight = love.graphics.getHeight()
+
+function vectorAdd(v1, v2)
+    return {
+        dx = v1.dx + v2.dx,
+        dy = v1.dy + v2.dy,
+    }
+end
+
+function bound(value, min, max)
+    if value < min then return min end
+    if value > max then return max end
+    return value
+end
 
 function resetRound()
     
@@ -19,9 +36,10 @@ end
 
 function resetGame()
     ship = {
-        x = 0,
-        y = 0,
+        x = resWidth / 2,
+        y = resHeight / 2,
         heading = 0,
+        mv = { dx = 0, dy = 0 },
         score = 0,
         lives = 2,
     }
@@ -32,13 +50,14 @@ function gameOverCheck()
     if ship.lives >= 0 then
         -- Check for remaining asteroids
         -- TODO
+        return false
     end
     
     return true
 end
 
-function getInput()
-    local input = {
+function updateInput()
+    input = {
         left = false,
         right = false,
         thrust = false,
@@ -103,7 +122,7 @@ function love.resize()
 end
 
 function love.update(dt)
-    local input = getInput()
+    updateInput()
     
     if not started then
         if input.fire then
@@ -111,12 +130,40 @@ function love.update(dt)
         end
     else
         -- Process input
+        if input.left then
+            ship.heading = ship.heading + (rotateSpeed * dt)
+        elseif input.right then
+            ship.heading = ship.heading - (rotateSpeed * dt)
+        end
+        
+        while ship.heading < 0 do ship.heading = ship.heading + 2 * math.pi end
+        while ship.heading >= 2 * math.pi do ship.heading = ship.heading - 2 * math.pi end
+        
+        if input.thrust then
+            local newThrust = {
+                dx = thrustSpeed * dt * math.cos(ship.heading),
+                dy = -1 * thrustSpeed * dt * math.sin(ship.heading),
+            }
+            ship.mv = vectorAdd(ship.mv, newThrust)
+        end
+        
+        ship.mv.dx = bound(ship.mv.dx, -maxThrustMultiplier * thrustSpeed, maxThrustMultiplier * thrustSpeed)
+        ship.mv.dy = bound(ship.mv.dy, -maxThrustMultiplier * thrustSpeed, maxThrustMultiplier * thrustSpeed)
+        
+        -- Process ship movements
+        ship.x = ship.x + ship.mv.dx
+        ship.y = ship.y + ship.mv.dy
+        
+        -- Process ship wrap around
+        while ship.x < margin do ship.x = ship.x + (resWidth - 2 * margin) end
+        while ship.x >= resWidth - margin do ship.x = ship.x - (resWidth - 2 * margin) end
+        while ship.y < margin do ship.y = ship.y + (resHeight - 2 * margin) end
+        while ship.y >= resHeight - margin do ship.y = ship.y - (resHeight - 2 * margin) end
+        
+        -- Process asteroid movements
         -- TODO
         
-        -- Process sprite movements
-        -- TODO
-        
-        -- Process sprite collisions
+        -- Process collisions
         -- TODO
         
         if gameOverCheck() then
@@ -124,6 +171,23 @@ function love.update(dt)
         end
         
     end
+end
+
+function getShipPolygon()
+    local p = {
+        6, 0,
+        -6, -4,
+        -4, 0,
+        -6, 4,
+    }
+    
+    for i = 1, #p, 2 do
+        local x, y = p[i], p[i+1]
+        p[i] = ship.x + (x * math.cos(ship.heading)) - (y * math.sin(ship.heading))
+        p[i+1] = ship.y - ((x * math.sin(ship.heading)) + (y * math.cos(ship.heading)))
+    end
+    
+    return p
 end
 
 function love.draw()
@@ -145,13 +209,22 @@ function love.draw()
     local livesText = "x"..tostring(ship.lives)
     love.graphics.print(livesText, margin / 4, resHeight - margin + ((margin - font:getHeight(livesText)) / 2))
     
-    -- Draw sprites
+    -- Draw ship
+    love.graphics.polygon("fill", getShipPolygon())
+    
+    -- Draw shots
+    -- TODO
+    
+    -- Draw asteroids
     -- TODO
     
     -- Draw Debug Info
     if debugMode then
-        local fpsText = "FPS: "..tostring(love.timer.getFPS())
+       local fpsText = "FPS: "..tostring(love.timer.getFPS())
        love.graphics.print(fpsText, resWidth - (font:getWidth(fpsText) + margin / 4), resHeight - margin + ((margin - font:getHeight(fpsText)) / 2))
+       
+       local thrustText = tostring(math.floor(math.deg(ship.heading)))..", "..tostring(math.floor(ship.mv.dx))..", "..tostring(math.floor(ship.mv.dy))
+       love.graphics.print(thrustText, (resWidth - font:getWidth(thrustText)) / 2, resHeight - margin + ((margin - font:getHeight(thrustText)) / 2))
     end
     
     -- Draw canvas to screen
