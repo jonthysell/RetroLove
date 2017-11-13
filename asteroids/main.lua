@@ -10,13 +10,16 @@ resHeight = 240
 
 margin = 20
 
-thrustSpeed = 2
-maxSpeed = 200
-rotateSpeed = math.rad(90)
+shipThrustSpeed = 2
+maxShipSpeed = 200
+shipRotateSpeed = math.rad(90)
 
 shotSpeed = 200
 maxShots = 3
 shotCooldownTime = 1 / maxShots
+
+startingAsteroids = 4
+startingAsteroidMaxSpeed = 50
 
 started = false
 debugMode = false
@@ -32,7 +35,7 @@ function resetRound()
     })
     
     shots = Queue:new()
-    timeSinceLastShot = -2
+    timeSinceLastShot = 0
     
     started = false
 end
@@ -43,14 +46,23 @@ function resetGame()
         lives = 2,
     }
     
+    asteroids = Queue:new()
+    for i = 1, startingAsteroids do
+        local asteroid = Asteroid:new({
+            x = margin + (resWidth - 2 * margin) * math.random(),
+            y = margin + (resHeight - 2 * margin) * math.random(),
+            dx = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
+            dy = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
+        })
+       asteroids:enqueue(asteroid)
+    end
+    
     resetRound()
 end
 
 function gameOverCheck()
     if player.lives >= 0 then
-        -- Check for remaining asteroids
-        -- TODO
-        return false
+        return asteroids:count() == 0
     end
     
     return true
@@ -128,9 +140,9 @@ function love.update(dt)
     else
         -- Process input
         if input.left then
-            ship.heading = ship.heading + (rotateSpeed * dt)
+            ship.heading = ship.heading + (shipRotateSpeed * dt)
         elseif input.right then
-            ship.heading = ship.heading - (rotateSpeed * dt)
+            ship.heading = ship.heading - (shipRotateSpeed * dt)
         end
         
         while ship.heading < 0 do ship.heading = ship.heading + 2 * math.pi end
@@ -138,8 +150,8 @@ function love.update(dt)
         
         if input.thrust then
             local newThrust = {
-                dx = thrustSpeed * math.cos(ship.heading),
-                dy = -1 * thrustSpeed * math.sin(ship.heading),
+                dx = shipThrustSpeed * math.cos(ship.heading),
+                dy = -1 * shipThrustSpeed * math.sin(ship.heading),
             }
             newThrust = vectorAdd(newThrust, {dx = ship.dx, dy = ship.dy})
             ship.dx, ship.dy = newThrust.dx, newThrust.dy
@@ -154,7 +166,6 @@ function love.update(dt)
                     y = ship.y - ship.r * math.sin(ship.heading),
                     dx = ship.dx + shotSpeed * math.cos(ship.heading),
                     dy = ship.dy + (-1 * shotSpeed * math.sin(ship.heading)),
-                    heading = ship.heading,
                     timeRemaining = 2 * shotCooldownTime,
                 })
                 newShot.timeRemaining = newShot.timeRemaining + dt
@@ -164,8 +175,8 @@ function love.update(dt)
         end
         
         -- Bound and process ship movement
-        ship.dx = bound(ship.dx, -maxSpeed, maxSpeed)
-        ship.dy = bound(ship.dy, -maxSpeed, maxSpeed)
+        ship.dx = bound(ship.dx, -maxShipSpeed, maxShipSpeed)
+        ship.dy = bound(ship.dy, -maxShipSpeed, maxShipSpeed)
         ship:move(dt, margin, resWidth - margin, margin, resHeight - margin)
         
         -- Process shot movements
@@ -179,7 +190,13 @@ function love.update(dt)
         end
         
         -- Process asteroid movements
-        -- TODO
+        for i = 1, asteroids:count() do
+            local asteroid = asteroids:dequeue()
+            if asteroid.r >= 2 then
+                asteroid:move(dt, margin, resWidth - margin, margin, resHeight - margin)
+                asteroids:enqueue(asteroid)
+            end
+        end
         
         -- Process collisions
         -- TODO
@@ -222,7 +239,11 @@ function love.draw()
     end
     
     -- Draw asteroids
-    -- TODO
+    for i = 1, asteroids:count() do
+        local asteroid = asteroids:dequeue()
+        drawSprite(asteroid)
+        asteroids:enqueue(asteroid)
+    end
     
     -- Draw margins
     love.graphics.setColor({0, 0, 0})

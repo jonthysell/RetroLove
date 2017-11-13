@@ -2,13 +2,10 @@
 -- Copyright (c) 2017 Jon Thysell
 
 -- Queue
-Queue = {
-    first = 0,
-    last = -1
-}
+Queue = {}
 
-function Queue:new(o)
-    local o = o or {}
+function Queue:new()
+    local o = {first = 0, last = -1}
     setmetatable(o, self)
     self.__index = self
     return o

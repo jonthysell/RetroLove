@@ -65,9 +65,10 @@ end
 -- Shot
 Shot = Sprite:new({
     r = 1,
-    heading = 0,
-    timeRemaining = 1,
+    timeRemaining = 0,
 })
 
 -- Asteroid
--- TODO
+Asteroid = Sprite:new({
+    r = 16,
+})
