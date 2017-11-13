@@ -83,3 +83,35 @@ Shot = Sprite:new({
 Asteroid = Sprite:new({
     r = 16,
 })
+
+function Asteroid:split(speedMultiplier)
+    local speedMultiplier = speedMultiplier or 1
+    
+    local m = math.sqrt(self.dx^2 + self.dy^2)
+    local d = math.atan(self.dy / self.dx)
+    
+    local a1 = Asteroid:new({
+        x = self.x,
+        y = self.y,
+        dx = speedMultiplier * m * math.cos(d + math.rad(90)),
+        dy = speedMultiplier * m * math.sin(d + math.rad(90)),
+        r = self.r / 2
+    })
+    
+    local a2 = Asteroid:new({
+        x = self.x,
+        y = self.y,
+        dx = speedMultiplier * m * math.cos(d - math.rad(90)),
+        dy = speedMultiplier * m * math.sin(d - math.rad(90)),
+        r = self.r / 2
+    })
+    
+    return a1, a2
+end
+
+function Asteroid:draw(ox, oy)
+    local ox = ox or self.x
+    local oy = oy or self.y
+    
+    love.graphics.circle("line", ox, oy, self.r)
+end

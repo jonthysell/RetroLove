@@ -10,16 +10,22 @@ resHeight = 240
 
 margin = 20
 
+highScore = 0
+startingLives = 2
+startingInvincibleTime = 3
+
 shipThrustSpeed = 2
 maxShipSpeed = 200
 shipRotateSpeed = math.rad(90)
 
 shotSpeed = 200
-maxShots = 3
+maxShots = 5
 shotCooldownTime = 1 / maxShots
 
-startingAsteroids = 4
-startingAsteroidMaxSpeed = 50
+startingAsteroids = 5
+startingAsteroidMaxSpeed = 25
+explodeSpeedMultiplier = 10/9
+asteroidValue = 64
 
 started = false
 debugMode = false
@@ -31,19 +37,18 @@ function resetRound()
     ship = Ship:new({
         x = resWidth / 2,
         y = resHeight / 2,
-        heading = 0,
+        heading = math.rad(90),
     })
     
     shots = Queue:new()
     timeSinceLastShot = 0
-    
-    started = false
+    invincibleTime = startingInvincibleTime
 end
 
 function resetGame()
     player = {
         score = 0,
-        lives = 2,
+        lives = startingLives,
     }
     
     asteroids = Queue:new()
@@ -54,18 +59,12 @@ function resetGame()
             dx = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
             dy = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
         })
-       asteroids:enqueue(asteroid)
+        asteroids:enqueue(asteroid)
     end
+    
+    started = false
     
     resetRound()
-end
-
-function gameOverCheck()
-    if player.lives >= 0 then
-        return asteroids:count() == 0
-    end
-    
-    return true
 end
 
 function getInput()
@@ -74,6 +73,7 @@ function getInput()
         right = false,
         thrust = false,
         fire = false,
+        start = false,
     }
     
     -- Process Keyboard
@@ -81,6 +81,7 @@ function getInput()
     if love.keyboard.isDown("right") then input.right = true end
     if love.keyboard.isDown("up") then input.thrust = true end
     if love.keyboard.isDown("space") then input.fire = true end
+    if love.keyboard.isDown("return") then input.start = true end
     
     -- Process Touch
     if love.touch then
@@ -130,11 +131,32 @@ function love.resize()
     screenHeight = love.graphics.getHeight()
 end
 
+function mirroredCollision(s1, s2)
+    -- Check for regular collision
+    if collision(s1, s2) then return true end
+    
+    local m1 = s1:getMirrors(margin, resWidth - margin, margin, resHeight - margin)
+    table.insert(m1, { x = s1.x, y = s1.y })
+    local r1 = s1.r
+    
+    local m2 = s2:getMirrors(margin, resWidth - margin, margin, resHeight - margin)
+    table.insert(m2, { x = s2.x, y = s2.y })
+    local r2 = s2.r
+    
+    for i = 1, #m1 do
+        for j = 1, #m2 do
+            if collision({ x = m1[i].x, y = m1[i].y, r = r1 }, { x = m2[j].x, y = m2[j].y, r = r2}) then return true end
+        end
+    end
+    
+    return false
+end
+
 function love.update(dt)
     local input = getInput()
     
     if not started then
-        if input.fire then
+        if input.start then
             started = true
         end
     else
@@ -192,26 +214,64 @@ function love.update(dt)
         -- Process asteroid movements
         for i = 1, asteroids:count() do
             local asteroid = asteroids:dequeue()
-            if asteroid.r >= 2 then
-                asteroid:move(dt, margin, resWidth - margin, margin, resHeight - margin)
+            asteroid:move(dt, margin, resWidth - margin, margin, resHeight - margin)
+            asteroids:enqueue(asteroid)
+        end
+        
+        -- Process shot/asteroid collisions
+        for i = 1, shots:count() do
+            local shot = shots:dequeue()
+            local hit = false
+            
+            for j = 1, asteroids:count() do
+                local asteroid = asteroids:dequeue()
+                hit = hit or mirroredCollision(shot, asteroid)
+                if hit then
+                    player.score = player.score + asteroidValue / asteroid.r
+                    highScore = math.max(highScore, player.score)
+                    
+                    local a1, a2 = asteroid:split(explodeSpeedMultiplier)
+                    if a1.r > 2 then asteroids:enqueue(a1) end
+                    if a2.r > 2 then asteroids:enqueue(a2) end
+                    
+                    break
+                end
                 asteroids:enqueue(asteroid)
             end
+            
+            if not hit then shots:enqueue(shot) end
         end
         
-        -- Process collisions
-        -- TODO
+        -- Process ship/asteroid collisions
+        local shipHit = false
+        if invincibleTime <= 0 then
+            for i = 1, asteroids:count() do
+                local asteroid = asteroids:dequeue()
+                shipHit = shipHit or mirroredCollision(ship, asteroid)
+                asteroids:enqueue(asteroid)
+                if shipHit then
+                    player.lives = player.lives - 1
+                    break
+                end
+            end
+        else
+            invincibleTime = invincibleTime - dt
+        end
         
-        if gameOverCheck() then
+        -- Gameover check
+        if shipHit and player.lives >= 0 then
+            resetRound()
+        elseif player.lives < 0 or asteroids:count() == 0 then
             resetGame()
         end
-        
     end
 end
 
-function drawSprite(s)
+function drawMirroredSprite(s)
+    -- Draw main sprite
     s:draw()
     
-    -- Draw mirrored
+    -- Draw mirrors
     local mirrors = s:getMirrors(margin, resWidth - margin, margin, resHeight - margin)
     for i = 1, #mirrors do
         s:draw(mirrors[i].x, mirrors[i].y)
@@ -228,21 +288,28 @@ function love.draw()
     
     love.graphics.setColor({255, 255, 255})
     
-    -- Draw ship
-    drawSprite(ship)
-    
-    -- Draw shots
-    for i = 1, shots:count() do
-        local shot = shots:dequeue()
-        drawSprite(shot)
-        shots:enqueue(shot)
-    end
-    
-    -- Draw asteroids
-    for i = 1, asteroids:count() do
-        local asteroid = asteroids:dequeue()
-        drawSprite(asteroid)
-        asteroids:enqueue(asteroid)
+    if not started then
+        local gameoverText = "GAME OVER"
+        love.graphics.print(gameoverText, (resWidth - font:getWidth(gameoverText)) / 2, (resHeight - font:getHeight(gameoverText)) / 2)
+    else
+        -- Draw ship
+        if invincibleTime <= 0 or math.random() < 0.5  then
+            drawMirroredSprite(ship)
+        end
+
+        -- Draw shots
+        for i = 1, shots:count() do
+            local shot = shots:dequeue()
+            drawMirroredSprite(shot)
+            shots:enqueue(shot)
+        end
+
+        -- Draw asteroids
+        for i = 1, asteroids:count() do
+            local asteroid = asteroids:dequeue()
+            drawMirroredSprite(asteroid)
+            asteroids:enqueue(asteroid)
+        end
     end
     
     -- Draw margins
@@ -255,7 +322,7 @@ function love.draw()
     love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
     
     -- Draw score
-    local scoreText = tostring(player.score)
+    local scoreText = started and "SCORE: "..tostring(player.score) or "HI-SCORE: "..tostring(highScore)
     love.graphics.print(scoreText, (resWidth - font:getWidth(scoreText)) / 2, (margin - font:getHeight(scoreText)) / 2)
     
     -- Draw lives
