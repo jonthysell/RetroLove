@@ -17,6 +17,17 @@ function Sprite:new(o)
     return o
 end
 
+function Sprite:getMirrors(xmin, xmax, ymin, ymax)
+    local mirrors = {}
+    
+    if self.x - self.r < xmin then table.insert(mirrors, { x = self.x + (xmax - xmin), y = self.y }) end
+    if self.x + self.r > xmax then table.insert(mirrors, { x = self.x - (xmax - xmin), y = self.y }) end
+    if self.y - self.r < ymin then table.insert(mirrors, { x = self.x, y = self.y + (ymax - ymin) }) end
+    if self.y + self.r > ymax then table.insert(mirrors, { x = self.x, y = self.y - (ymax - ymin) }) end
+    
+    return mirrors
+end
+
 function Sprite:move(dt, xmin, xmax, ymin, ymax)
     self.x = self.x + self.dx * dt
     self.y = self.y + self.dy * dt

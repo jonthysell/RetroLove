@@ -212,10 +212,10 @@ function drawSprite(s)
     s:draw()
     
     -- Draw mirrored
-    if s.x - s.r < margin then s:draw(s.x + (resWidth - 2 * margin)) end
-    if s.x + s.r > resWidth - margin then s:draw(s.x - (resWidth - 2 * margin)) end
-    if s.y - s.r < margin then s:draw(s.x, s.y + (resHeight - 2 * margin)) end
-    if s.y + s.r > resHeight - margin then s:draw(s.x, s.y - (resHeight - 2 * margin)) end
+    local mirrors = s:getMirrors(margin, resWidth - margin, margin, resHeight - margin)
+    for i = 1, #mirrors do
+        s:draw(mirrors[i].x, mirrors[i].y)
+    end
 end
 
 function love.draw()
