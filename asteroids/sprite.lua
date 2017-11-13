@@ -17,9 +17,9 @@ function Sprite:new(o)
     return o
 end
 
-function Sprite:move(xmin, xmax, ymin, ymax)
-    self.x = self.x + self.dx
-    self.y = self.y + self.dy
+function Sprite:move(dt, xmin, xmax, ymin, ymax)
+    self.x = self.x + self.dx * dt
+    self.y = self.y + self.dy * dt
     
     -- Process wrap around
     if xmin and self.x < xmin then self.x = xmax end
@@ -66,7 +66,7 @@ end
 Shot = Sprite:new({
     r = 1,
     heading = 0,
-    timeRemaining = 2,
+    timeRemaining = 1,
 })
 
 -- Asteroid

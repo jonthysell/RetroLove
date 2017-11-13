@@ -11,11 +11,11 @@ resHeight = 240
 margin = 20
 
 thrustSpeed = 2
-maxThrustMultiplier = 3
+maxSpeed = 200
 rotateSpeed = math.rad(90)
 
-shotSpeed = 100
-maxShots = 5
+shotSpeed = 200
+maxShots = 3
 shotCooldownTime = 1 / maxShots
 
 started = false
@@ -138,8 +138,8 @@ function love.update(dt)
         
         if input.thrust then
             local newThrust = {
-                dx = thrustSpeed * dt * math.cos(ship.heading),
-                dy = -1 * thrustSpeed * dt * math.sin(ship.heading),
+                dx = thrustSpeed * math.cos(ship.heading),
+                dy = -1 * thrustSpeed * math.sin(ship.heading),
             }
             newThrust = vectorAdd(newThrust, {dx = ship.dx, dy = ship.dy})
             ship.dx, ship.dy = newThrust.dx, newThrust.dy
@@ -152,7 +152,10 @@ function love.update(dt)
                 local newShot = Shot:new({
                     x = ship.x + ship.r * math.cos(ship.heading),
                     y = ship.y - ship.r * math.sin(ship.heading),
+                    dx = ship.dx + shotSpeed * math.cos(ship.heading),
+                    dy = ship.dy + (-1 * shotSpeed * math.sin(ship.heading)),
                     heading = ship.heading,
+                    timeRemaining = 2 * shotCooldownTime,
                 })
                 newShot.timeRemaining = newShot.timeRemaining + dt
                 shots:enqueue(newShot)
@@ -161,18 +164,16 @@ function love.update(dt)
         end
         
         -- Bound and process ship movement
-        ship.dx = bound(ship.dx, -maxThrustMultiplier * thrustSpeed, maxThrustMultiplier * thrustSpeed)
-        ship.dy = bound(ship.dy, -maxThrustMultiplier * thrustSpeed, maxThrustMultiplier * thrustSpeed)
-        ship:move(margin, resWidth - margin, margin, resHeight - margin)
+        ship.dx = bound(ship.dx, -maxSpeed, maxSpeed)
+        ship.dy = bound(ship.dy, -maxSpeed, maxSpeed)
+        ship:move(dt, margin, resWidth - margin, margin, resHeight - margin)
         
         -- Process shot movements
         for i = 1, shots:count() do
             local shot = shots:dequeue()
             shot.timeRemaining = shot.timeRemaining - dt
             if shot.timeRemaining > 0 then
-                shot.dx = shotSpeed * dt * math.cos(shot.heading)
-                shot.dy = -1 * shotSpeed * dt * math.sin(shot.heading)
-                shot:move(margin, resWidth - margin, margin, resHeight - margin)
+                shot:move(dt, margin, resWidth - margin, margin, resHeight - margin)
                 shots:enqueue(shot)
             end
         end
@@ -245,7 +246,7 @@ function love.draw()
        local fpsText = "FPS: "..tostring(love.timer.getFPS())
        love.graphics.print(fpsText, resWidth - (font:getWidth(fpsText) + margin / 4), resHeight - margin + ((margin - font:getHeight(fpsText)) / 2))
        
-       local thrustText = tostring(math.floor(math.deg(ship.heading)))..", "..tostring(math.floor(ship.mv.dx))..", "..tostring(math.floor(ship.mv.dy))
+       local thrustText = tostring(math.floor(math.deg(ship.heading)))..", "..tostring(math.floor(ship.dx))..", "..tostring(math.floor(ship.dy))
        love.graphics.print(thrustText, (resWidth - font:getWidth(thrustText)) / 2, resHeight - margin + ((margin - font:getHeight(thrustText)) / 2))
     end
     
