@@ -1,6 +1,9 @@
 -- asteroids\main.lua
 -- Copyright (c) 2017 Jon Thysell
 
+require "utils"
+require "sprite"
+
 resWidth = 320
 resHeight = 240
 
@@ -16,38 +19,27 @@ debugMode = false
 screenWidth = love.graphics.getWidth()
 screenHeight = love.graphics.getHeight()
 
-function vectorAdd(v1, v2)
-    return {
-        dx = v1.dx + v2.dx,
-        dy = v1.dy + v2.dy,
-    }
-end
-
-function bound(value, min, max)
-    if value < min then return min end
-    if value > max then return max end
-    return value
-end
-
 function resetRound()
-    
     started = false
 end
 
 function resetGame()
-    ship = {
-        x = resWidth / 2,
-        y = resHeight / 2,
-        heading = 0,
-        mv = { dx = 0, dy = 0 },
+    player = {
         score = 0,
         lives = 2,
     }
+    
+    ship = Ship:new({
+        x = resWidth / 2,
+        y = resHeight / 2,
+        heading = 0,
+    })
+    
     resetRound()
 end
 
 function gameOverCheck()
-    if ship.lives >= 0 then
+    if player.lives >= 0 then
         -- Check for remaining asteroids
         -- TODO
         return false
@@ -56,8 +48,8 @@ function gameOverCheck()
     return true
 end
 
-function updateInput()
-    input = {
+function getInput()
+    local input = {
         left = false,
         right = false,
         thrust = false,
@@ -82,6 +74,19 @@ function updateInput()
     return input
 end
 
+function love.load()
+    -- Init offscreen graphics
+    canvas = love.graphics.newCanvas(resWidth, resHeight)
+    canvas:setFilter("nearest", "nearest", 0)
+    love.graphics.setFont(love.graphics.newFont(margin * .7))
+    
+    -- Load sounds
+    -- TODO
+    
+    math.randomseed(os.time())
+    resetGame()
+end
+
 function love.keyreleased(key)
     if key == "q" or key == "escape" then
         love.event.quit()
@@ -100,29 +105,13 @@ function love.touchreleased(id, x, y, dx, dy, pressure)
     end
 end
 
-function love.load()
-    -- Init offscreen graphics
-    canvas = love.graphics.newCanvas(resWidth, resHeight)
-    canvas:setFilter("nearest", "nearest", 0)
-    love.graphics.setFont(love.graphics.newFont(margin * .7))
-    
-    -- Load sprites
-    -- TODO
-    
-    -- Load sounds
-    -- TODO
-    
-    math.randomseed(os.time())
-    resetGame()
-end
-
 function love.resize()
     screenWidth = love.graphics.getWidth()
     screenHeight = love.graphics.getHeight()
 end
 
 function love.update(dt)
-    updateInput()
+    local input = getInput()
     
     if not started then
         if input.fire then
@@ -151,14 +140,10 @@ function love.update(dt)
         ship.mv.dy = bound(ship.mv.dy, -maxThrustMultiplier * thrustSpeed, maxThrustMultiplier * thrustSpeed)
         
         -- Process ship movements
-        ship.x = ship.x + ship.mv.dx
-        ship.y = ship.y + ship.mv.dy
+        ship:move(margin, resWidth - margin, margin, resHeight - margin)
         
-        -- Process ship wrap around
-        while ship.x < margin do ship.x = ship.x + (resWidth - 2 * margin) end
-        while ship.x >= resWidth - margin do ship.x = ship.x - (resWidth - 2 * margin) end
-        while ship.y < margin do ship.y = ship.y + (resHeight - 2 * margin) end
-        while ship.y >= resHeight - margin do ship.y = ship.y - (resHeight - 2 * margin) end
+        -- Process shot movements
+        -- TODO
         
         -- Process asteroid movements
         -- TODO
@@ -173,21 +158,14 @@ function love.update(dt)
     end
 end
 
-function getShipPolygon()
-    local p = {
-        6, 0,
-        -6, -4,
-        -4, 0,
-        -6, 4,
-    }
+function drawSprite(s)
+    s:draw()
     
-    for i = 1, #p, 2 do
-        local x, y = p[i], p[i+1]
-        p[i] = ship.x + (x * math.cos(ship.heading)) - (y * math.sin(ship.heading))
-        p[i+1] = ship.y - ((x * math.sin(ship.heading)) + (y * math.cos(ship.heading)))
-    end
-    
-    return p
+    -- Draw mirrored
+    if s.x - s.r < margin then s:draw(s.x + (resWidth - 2 * margin)) end
+    if s.x + s.r > resWidth - margin then s:draw(s.x - (resWidth - 2 * margin)) end
+    if s.y - s.r < margin then s:draw(s.x, s.y + (resHeight - 2 * margin)) end
+    if s.y + s.r > resHeight - margin then s:draw(s.x, s.y - (resHeight - 2 * margin)) end
 end
 
 function love.draw()
@@ -196,27 +174,35 @@ function love.draw()
     
     love.graphics.clear()
     
-    -- Draw border
-    love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
-
     local font = love.graphics.getFont()
     
-    -- Draw score
-    local scoreText = tostring(ship.score)
-    love.graphics.print(scoreText, (resWidth - font:getWidth(scoreText)) / 2, (margin - font:getHeight(scoreText)) / 2)
-    
-    -- Draw lives
-    local livesText = "x"..tostring(ship.lives)
-    love.graphics.print(livesText, margin / 4, resHeight - margin + ((margin - font:getHeight(livesText)) / 2))
+    love.graphics.setColor({255, 255, 255})
     
     -- Draw ship
-    love.graphics.polygon("fill", getShipPolygon())
+    drawSprite(ship)
     
     -- Draw shots
     -- TODO
     
     -- Draw asteroids
     -- TODO
+    
+    -- Draw margins
+    love.graphics.setColor({0, 0, 0})
+    love.graphics.rectangle("fill", 0, 0, margin, resHeight - margin)
+    love.graphics.rectangle("fill", 0, resHeight - margin, resWidth - margin, resHeight)
+    love.graphics.rectangle("fill", margin, 0, resWidth, margin)
+    love.graphics.rectangle("fill", resWidth - margin, margin, resWidth, resHeight)
+    love.graphics.setColor({255, 255, 255})
+    love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
+    
+    -- Draw score
+    local scoreText = tostring(player.score)
+    love.graphics.print(scoreText, (resWidth - font:getWidth(scoreText)) / 2, (margin - font:getHeight(scoreText)) / 2)
+    
+    -- Draw lives
+    local livesText = "x"..tostring(player.lives)
+    love.graphics.print(livesText, margin / 4, resHeight - margin + ((margin - font:getHeight(livesText)) / 2))
     
     -- Draw Debug Info
     if debugMode then
