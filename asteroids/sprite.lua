@@ -5,7 +5,8 @@
 Sprite = {
     x = 0,
     y = 0,
-    mv = { dx = 0, dy = 0 },
+    dx = 0,
+    dy = 0,
     r = 0,
 }
 
@@ -17,8 +18,8 @@ function Sprite:new(o)
 end
 
 function Sprite:move(xmin, xmax, ymin, ymax)
-    self.x = self.x + self.mv.dx
-    self.y = self.y + self.mv.dy
+    self.x = self.x + self.dx
+    self.y = self.y + self.dy
     
     -- Process wrap around
     if xmin and self.x < xmin then self.x = xmax end
@@ -62,7 +63,11 @@ function Ship:draw(ox, oy)
 end
 
 -- Shot
--- TODO
+Shot = Sprite:new({
+    r = 1,
+    heading = 0,
+    timeRemaining = 2,
+})
 
 -- Asteroid
 -- TODO

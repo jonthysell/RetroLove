@@ -3,6 +3,7 @@
 
 require "utils"
 require "sprite"
+require "queue"
 
 resWidth = 320
 resHeight = 240
@@ -13,6 +14,10 @@ thrustSpeed = 2
 maxThrustMultiplier = 3
 rotateSpeed = math.rad(90)
 
+shotSpeed = 100
+maxShots = 5
+shotCooldownTime = 1 / maxShots
+
 started = false
 debugMode = false
 
@@ -20,6 +25,15 @@ screenWidth = love.graphics.getWidth()
 screenHeight = love.graphics.getHeight()
 
 function resetRound()
+    ship = Ship:new({
+        x = resWidth / 2,
+        y = resHeight / 2,
+        heading = 0,
+    })
+    
+    shots = Queue:new()
+    timeSinceLastShot = -2
+    
     started = false
 end
 
@@ -28,12 +42,6 @@ function resetGame()
         score = 0,
         lives = 2,
     }
-    
-    ship = Ship:new({
-        x = resWidth / 2,
-        y = resHeight / 2,
-        heading = 0,
-    })
     
     resetRound()
 end
@@ -133,17 +141,41 @@ function love.update(dt)
                 dx = thrustSpeed * dt * math.cos(ship.heading),
                 dy = -1 * thrustSpeed * dt * math.sin(ship.heading),
             }
-            ship.mv = vectorAdd(ship.mv, newThrust)
+            newThrust = vectorAdd(newThrust, {dx = ship.dx, dy = ship.dy})
+            ship.dx, ship.dy = newThrust.dx, newThrust.dy
         end
         
-        ship.mv.dx = bound(ship.mv.dx, -maxThrustMultiplier * thrustSpeed, maxThrustMultiplier * thrustSpeed)
-        ship.mv.dy = bound(ship.mv.dy, -maxThrustMultiplier * thrustSpeed, maxThrustMultiplier * thrustSpeed)
+        timeSinceLastShot = timeSinceLastShot + dt
         
-        -- Process ship movements
+        if input.fire then
+            if shots:count() < maxShots and timeSinceLastShot >= shotCooldownTime then
+                local newShot = Shot:new({
+                    x = ship.x + ship.r * math.cos(ship.heading),
+                    y = ship.y - ship.r * math.sin(ship.heading),
+                    heading = ship.heading,
+                })
+                newShot.timeRemaining = newShot.timeRemaining + dt
+                shots:enqueue(newShot)
+                timeSinceLastShot = 0
+            end
+        end
+        
+        -- Bound and process ship movement
+        ship.dx = bound(ship.dx, -maxThrustMultiplier * thrustSpeed, maxThrustMultiplier * thrustSpeed)
+        ship.dy = bound(ship.dy, -maxThrustMultiplier * thrustSpeed, maxThrustMultiplier * thrustSpeed)
         ship:move(margin, resWidth - margin, margin, resHeight - margin)
         
         -- Process shot movements
-        -- TODO
+        for i = 1, shots:count() do
+            local shot = shots:dequeue()
+            shot.timeRemaining = shot.timeRemaining - dt
+            if shot.timeRemaining > 0 then
+                shot.dx = shotSpeed * dt * math.cos(shot.heading)
+                shot.dy = -1 * shotSpeed * dt * math.sin(shot.heading)
+                shot:move(margin, resWidth - margin, margin, resHeight - margin)
+                shots:enqueue(shot)
+            end
+        end
         
         -- Process asteroid movements
         -- TODO
@@ -182,7 +214,11 @@ function love.draw()
     drawSprite(ship)
     
     -- Draw shots
-    -- TODO
+    for i = 1, shots:count() do
+        local shot = shots:dequeue()
+        drawSprite(shot)
+        shots:enqueue(shot)
+    end
     
     -- Draw asteroids
     -- TODO
