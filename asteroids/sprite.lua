@@ -50,7 +50,8 @@ end
 -- Ship
 Ship = Sprite:new({
     r = 6,
-    heading = 0
+    heading = 0,
+    shieldTimeRemaining = 0,
 })
 
 function Ship:draw(ox, oy)
@@ -71,6 +72,10 @@ function Ship:draw(ox, oy)
     end
     
     love.graphics.polygon("fill", p)
+    
+    if self.shieldTimeRemaining > 0 then
+        love.graphics.circle("line", ox, oy, self.r * 1.5)
+    end
 end
 
 -- Shot
@@ -113,5 +118,24 @@ function Asteroid:draw(ox, oy)
     local ox = ox or self.x
     local oy = oy or self.y
     
-    love.graphics.circle("line", ox, oy, self.r)
+    local p = {
+        1, 0,
+        0.3, 0.4,
+        0.5, 0.75,
+        0, 1,
+        -0.8, 0.5,
+        -1, 0,
+        -0.6, -0.6,
+        0, -1,
+        0.3, -0.5,
+        0.8, -0.4,
+    }
+    
+    for i = 1, #p, 2 do
+        local x, y = p[i], p[i+1]
+        p[i] = ox + (self.r * x)
+        p[i+1] = oy - (self.r * y)
+    end
+    
+    love.graphics.polygon("line", p)
 end

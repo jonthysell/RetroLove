@@ -38,11 +38,11 @@ function resetRound()
         x = resWidth / 2,
         y = resHeight / 2,
         heading = math.rad(90),
+        shieldTimeRemaining = startingInvincibleTime,
     })
     
     shots = Queue:new()
     timeSinceLastShot = 0
-    invincibleTime = startingInvincibleTime
 end
 
 function resetGame()
@@ -102,7 +102,9 @@ function love.load()
     love.graphics.setFont(love.graphics.newFont(margin * .7))
     
     -- Load sounds
-    -- TODO
+    sfx = {}
+    sfx.shot = love.audio.newSource("shot.ogg", "static")
+    sfx.hit = love.audio.newSource("hit.ogg", "static")
     
     math.randomseed(os.time())
     resetGame()
@@ -183,6 +185,7 @@ function love.update(dt)
         
         if input.fire then
             if shots:count() < maxShots and timeSinceLastShot >= shotCooldownTime then
+                love.audio.play(sfx.shot)
                 local newShot = Shot:new({
                     x = ship.x + ship.r * math.cos(ship.heading),
                     y = ship.y - ship.r * math.sin(ship.heading),
@@ -227,6 +230,7 @@ function love.update(dt)
                 local asteroid = asteroids:dequeue()
                 hit = hit or mirroredCollision(shot, asteroid)
                 if hit then
+                    love.audio.play(sfx.hit)
                     player.score = player.score + asteroidValue / asteroid.r
                     highScore = math.max(highScore, player.score)
                     
@@ -244,7 +248,7 @@ function love.update(dt)
         
         -- Process ship/asteroid collisions
         local shipHit = false
-        if invincibleTime <= 0 then
+        if ship.shieldTimeRemaining <= 0 then
             for i = 1, asteroids:count() do
                 local asteroid = asteroids:dequeue()
                 shipHit = shipHit or mirroredCollision(ship, asteroid)
@@ -255,7 +259,7 @@ function love.update(dt)
                 end
             end
         else
-            invincibleTime = invincibleTime - dt
+            ship.shieldTimeRemaining = ship.shieldTimeRemaining - dt
         end
         
         -- Gameover check
@@ -293,9 +297,7 @@ function love.draw()
         love.graphics.print(gameoverText, (resWidth - font:getWidth(gameoverText)) / 2, (resHeight - font:getHeight(gameoverText)) / 2)
     else
         -- Draw ship
-        if invincibleTime <= 0 or math.random() < 0.5  then
-            drawMirroredSprite(ship)
-        end
+        drawMirroredSprite(ship)
 
         -- Draw shots
         for i = 1, shots:count() do
