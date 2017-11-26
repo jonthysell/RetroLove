@@ -56,6 +56,7 @@ function resetGame()
         local asteroid = Asteroid:new({
             x = margin + (resWidth - 2 * margin) * math.random(),
             y = margin + (resHeight - 2 * margin) * math.random(),
+            orientation = math.rad(math.random(0, 360)),
             dx = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
             dy = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
         })

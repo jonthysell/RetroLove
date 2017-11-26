@@ -87,6 +87,7 @@ Shot = Sprite:new({
 -- Asteroid
 Asteroid = Sprite:new({
     r = 16,
+    orientation = 0,
 })
 
 function Asteroid:split(speedMultiplier)
@@ -98,6 +99,7 @@ function Asteroid:split(speedMultiplier)
     local a1 = Asteroid:new({
         x = self.x,
         y = self.y,
+        orientation = math.rad(math.random(0, 360)),
         dx = speedMultiplier * m * math.cos(d + math.rad(90)),
         dy = speedMultiplier * m * math.sin(d + math.rad(90)),
         r = self.r / 2
@@ -106,6 +108,7 @@ function Asteroid:split(speedMultiplier)
     local a2 = Asteroid:new({
         x = self.x,
         y = self.y,
+        orientation = math.rad(math.random(0, 360)),
         dx = speedMultiplier * m * math.cos(d - math.rad(90)),
         dy = speedMultiplier * m * math.sin(d - math.rad(90)),
         r = self.r / 2
@@ -132,9 +135,9 @@ function Asteroid:draw(ox, oy)
     }
     
     for i = 1, #p, 2 do
-        local x, y = p[i], p[i+1]
-        p[i] = ox + (self.r * x)
-        p[i+1] = oy - (self.r * y)
+        local x, y = self.r * p[i], self.r * p[i+1]
+        p[i] = ox + (x * math.cos(self.orientation)) - (y * math.sin(self.orientation))
+        p[i+1] = oy - ((x * math.sin(self.orientation)) + (y * math.cos(self.orientation)))
     end
     
     love.graphics.polygon("line", p)
