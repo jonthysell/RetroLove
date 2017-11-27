@@ -14,6 +14,8 @@ highScore = 0
 startingLives = 2
 startingInvincibleTime = 3
 
+extraLivesScoreThreshold = 1000
+
 shipThrustSpeed = 2
 maxShipSpeed = 200
 shipRotateSpeed = math.rad(90)
@@ -238,8 +240,15 @@ function love.update(dt)
                 hit = hit or mirroredCollision(shot, asteroid)
                 if hit then
                     love.audio.play(sfx.hit)
+                    local beforeScore = player.score
                     player.score = player.score + asteroidValue / asteroid.r
                     highScore = math.max(highScore, player.score)
+                    local afterScore = player.score
+                    
+                    if passThreshold(beforeScore, afterScore, extraLivesScoreThreshold) then
+                        -- Extra life
+                        player.lives = player.lives + 1
+                    end
                     
                     local a1, a2 = asteroid:split(explodeSpeedMultiplier)
                     if a1.r > 2 then asteroids:enqueue(a1) end

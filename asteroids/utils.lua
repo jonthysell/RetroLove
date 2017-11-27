@@ -21,3 +21,7 @@ end
 function collision(c1, c2)
     return distance(c1.x, c1.y, c2.x, c2.y) < (c1.r + c2.r)
 end
+
+function passThreshold(before, after, threshold)
+    return math.floor(before / threshold) < math.floor(after / threshold)
+end
