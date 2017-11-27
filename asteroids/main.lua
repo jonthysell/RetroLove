@@ -12,7 +12,8 @@ margin = 20
 
 highScore = 0
 startingLives = 2
-startingInvincibleTime = 3
+startingShieldTime = 3
+startingStage = 0
 
 extraLivesScoreThreshold = 1000
 
@@ -24,7 +25,9 @@ shotSpeed = 200
 maxShots = 5
 shotCooldownTime = 1 / maxShots
 
-startingAsteroids = 5
+startingAsteroidsMin = 2
+startingAsteroidsMax = 8
+
 startingAsteroidMaxSpeed = 25
 explodeSpeedMultiplier = 10/9
 asteroidValue = 64
@@ -34,26 +37,25 @@ debugMode = false
 screenWidth = love.graphics.getWidth()
 screenHeight = love.graphics.getHeight()
 
-function resetRound()
+function resetShip()
     ship = Ship:new({
         x = resWidth / 2,
         y = resHeight / 2,
         heading = math.rad(90),
-        shieldTimeRemaining = startingInvincibleTime,
+        shieldTimeRemaining = startingShieldTime,
     })
     
     shots = Queue:new()
     timeSinceLastShot = 0
 end
 
-function resetGame()
-    player = {
-        score = 0,
-        lives = startingLives,
-    }
+function resetStage()
+    local stage = player.stage
+    
+    local numAsteroids = math.min(startingAsteroidsMin + stage, startingAsteroidsMax)
     
     asteroids = Queue:new()
-    for i = 1, startingAsteroids do
+    for i = 1, numAsteroids do
         local asteroid = Asteroid:new({
             x = margin + (resWidth - 2 * margin) * math.random(),
             y = margin + (resHeight - 2 * margin) * math.random(),
@@ -63,10 +65,19 @@ function resetGame()
         })
         asteroids:enqueue(asteroid)
     end
+end
+
+function resetGame()
+    player = {
+        score = 0,
+        lives = startingLives,
+        stage = startingStage
+    }
+    
+    resetStage()
+    resetShip()
     
     pauseState = "GAME OVER"
-    
-    resetRound()
 end
 
 function getInput()
@@ -284,10 +295,16 @@ function love.update(dt)
         end
         
         -- Gameover check
-        if not ship.isAlive and ship.deathTimeRemaining <= 0 then
+        if ship.isAlive and asteroids:count() == 0 then
+            -- Load next stage
+            player.stage = player.stage + 1
+            resetStage()
+            resetShip()
+        elseif not ship.isAlive and ship.deathTimeRemaining <= 0 then
+            -- Ship has finished dying
             if player.lives >= 0 then
-                resetRound()
-            elseif player.lives < 0 or asteroids:count() == 0 then
+                resetShip()
+            elseif player.lives < 0 then
                 resetGame()
             end
         end
@@ -352,7 +369,7 @@ function love.draw()
     love.graphics.print(scoreText, (resWidth - font:getWidth(scoreText)) / 2, (margin - font:getHeight(scoreText)) / 2)
     
     -- Draw lives
-    local livesText = "x"..tostring(player.lives)
+    local livesText = "x"..tostring(math.max(0, player.lives))
     love.graphics.print(livesText, margin / 4, resHeight - margin + ((margin - font:getHeight(livesText)) / 2))
     
     -- Draw Debug Info
