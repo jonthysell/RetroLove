@@ -12,7 +12,7 @@
     Write-Host "Building asteroids.love..."
     Remove-Item -Recurse -Force "$scriptDir\build" | Out-Null
     New-Item "$scriptDir\build" -Type directory -Force | Out-Null
-    Compress-Archive -Path "$scriptDir\*.lua" -DestinationPath "$scriptDir\build\asteroids.zip" -CompressionLevel "Optimal" -Force | Out-Null
+    Compress-Archive -Path "$scriptDir\*.lua","$scriptDir\*.ogg" -DestinationPath "$scriptDir\build\asteroids.zip" -CompressionLevel "Optimal" -Force | Out-Null
     Rename-Item -Path "$scriptDir\build\asteroids.zip" -NewName "asteroids.love" -Force | Out-Null
     
     # End PowerShell
