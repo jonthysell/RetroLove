@@ -104,6 +104,7 @@ function love.load()
     sfx = {}
     sfx.shot = love.audio.newSource("shot.ogg", "static")
     sfx.hit = love.audio.newSource("hit.ogg", "static")
+    sfx.death = love.audio.newSource("death.ogg", "static")
     
     math.randomseed(os.time())
     resetGame()
@@ -255,6 +256,7 @@ function love.update(dt)
                 shipHit = shipHit or mirroredCollision(ship, asteroid)
                 asteroids:enqueue(asteroid)
                 if shipHit then
+                    love.audio.play(sfx.death)
                     player.lives = player.lives - 1
                     break
                 end
