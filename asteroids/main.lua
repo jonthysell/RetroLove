@@ -120,6 +120,7 @@ function love.load()
     sfx.shot = love.audio.newSource("shot.ogg", "static")
     sfx.hit = love.audio.newSource("hit.ogg", "static")
     sfx.death = love.audio.newSource("death.ogg", "static")
+    sfx.extralife = love.audio.newSource("extralife.ogg", "static")
     
     math.randomseed(os.time())
     resetGame()
@@ -258,6 +259,7 @@ function love.update(dt)
                     
                     if passThreshold(beforeScore, afterScore, extraLivesScoreThreshold) then
                         -- Extra life
+                        love.audio.play(sfx.extralife)
                         player.lives = player.lives + 1
                     end
                     
