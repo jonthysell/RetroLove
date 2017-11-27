@@ -52,29 +52,35 @@ Ship = Sprite:new({
     r = 6,
     heading = 0,
     shieldTimeRemaining = 0,
+    deathTimeRemaining = 0,
+    isAlive = true,
 })
 
 function Ship:draw(ox, oy)
     local ox = ox or self.x
     local oy = oy or self.y
     
-    local p = {
-        6, 0,
-        -6, -4,
-        -4, 0,
-        -6, 4,
-    }
-    
-    for i = 1, #p, 2 do
-        local x, y = p[i], p[i+1]
-        p[i] = ox + (x * math.cos(self.heading)) - (y * math.sin(self.heading))
-        p[i+1] = oy - ((x * math.sin(self.heading)) + (y * math.cos(self.heading)))
-    end
-    
-    love.graphics.polygon("fill", p)
-    
-    if self.shieldTimeRemaining > 0 then
-        love.graphics.circle("line", ox, oy, self.r * 1.5)
+    if self.deathTimeRemaining > 0 then
+        love.graphics.circle("fill", ox, oy, self.r * (1 - self.deathTimeRemaining))
+    else
+        local p = {
+            6, 0,
+            -6, -4,
+            -4, 0,
+            -6, 4,
+        }
+        
+        for i = 1, #p, 2 do
+            local x, y = p[i], p[i+1]
+            p[i] = ox + (x * math.cos(self.heading)) - (y * math.sin(self.heading))
+            p[i+1] = oy - ((x * math.sin(self.heading)) + (y * math.cos(self.heading)))
+        end
+        
+        love.graphics.polygon("fill", p)
+        
+        if self.shieldTimeRemaining > 0 then
+            love.graphics.circle("line", ox, oy, self.r * 1.5)
+        end
     end
 end
 

@@ -76,18 +76,20 @@ function getInput()
         start = false,
     }
     
-    -- Process Keyboard
-    if love.keyboard.isDown("left") then input.left = true end
-    if love.keyboard.isDown("right") then input.right = true end
-    if love.keyboard.isDown("up") then input.thrust = true end
-    if love.keyboard.isDown("space") then input.fire = true end
-    
-    -- Process Touch
-    if love.touch then
-        local touches = love.touch.getTouches()
-        for i, id in ipairs(touches) do
-            local x, y = love.touch.getPosition(id)
-            -- TODO
+    if ship.isAlive then        
+        -- Process Keyboard
+        if love.keyboard.isDown("left") then input.left = true end
+        if love.keyboard.isDown("right") then input.right = true end
+        if love.keyboard.isDown("up") then input.thrust = true end
+        if love.keyboard.isDown("space") then input.fire = true end
+        
+        -- Process Touch
+        if love.touch then
+            local touches = love.touch.getTouches()
+            for i, id in ipairs(touches) do
+                local x, y = love.touch.getPosition(id)
+                -- TODO
+            end
         end
     end
     
@@ -204,7 +206,10 @@ function love.update(dt)
         -- Bound and process ship movement
         ship.dx = bound(ship.dx, -maxShipSpeed, maxShipSpeed)
         ship.dy = bound(ship.dy, -maxShipSpeed, maxShipSpeed)
-        ship:move(dt, margin, resWidth - margin, margin, resHeight - margin)
+        
+        if ship.isAlive then
+            ship:move(dt, margin, resWidth - margin, margin, resHeight - margin)
+        end
         
         -- Process shot movements
         for i = 1, shots:count() do
@@ -249,27 +254,33 @@ function love.update(dt)
         end
         
         -- Process ship/asteroid collisions
-        local shipHit = false
-        if ship.shieldTimeRemaining <= 0 then
+        if ship.isAlive and ship.shieldTimeRemaining <= 0 then
+            -- Ship can be hit
             for i = 1, asteroids:count() do
                 local asteroid = asteroids:dequeue()
-                shipHit = shipHit or mirroredCollision(ship, asteroid)
+                local shipHit = mirroredCollision(ship, asteroid)
                 asteroids:enqueue(asteroid)
                 if shipHit then
                     love.audio.play(sfx.death)
+                    ship.deathTimeRemaining = 1.0
+                    ship.isAlive = false
                     player.lives = player.lives - 1
                     break
                 end
             end
-        else
+        elseif ship.isAlive and ship.shieldTimeRemaining > 0 then
             ship.shieldTimeRemaining = ship.shieldTimeRemaining - dt
+        elseif not ship.isAlive then
+            ship.deathTimeRemaining = ship.deathTimeRemaining - dt
         end
         
         -- Gameover check
-        if shipHit and player.lives >= 0 then
-            resetRound()
-        elseif player.lives < 0 or asteroids:count() == 0 then
-            resetGame()
+        if not ship.isAlive and ship.deathTimeRemaining <= 0 then
+            if player.lives >= 0 then
+                resetRound()
+            elseif player.lives < 0 or asteroids:count() == 0 then
+                resetGame()
+            end
         end
     end
 end
