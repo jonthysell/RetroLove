@@ -27,7 +27,6 @@ startingAsteroidMaxSpeed = 25
 explodeSpeedMultiplier = 10/9
 asteroidValue = 64
 
-started = false
 debugMode = false
 
 screenWidth = love.graphics.getWidth()
@@ -63,7 +62,7 @@ function resetGame()
         asteroids:enqueue(asteroid)
     end
     
-    started = false
+    pauseState = "GAME OVER"
     
     resetRound()
 end
@@ -82,7 +81,6 @@ function getInput()
     if love.keyboard.isDown("right") then input.right = true end
     if love.keyboard.isDown("up") then input.thrust = true end
     if love.keyboard.isDown("space") then input.fire = true end
-    if love.keyboard.isDown("return") then input.start = true end
     
     -- Process Touch
     if love.touch then
@@ -114,6 +112,12 @@ end
 function love.keyreleased(key)
     if key == "q" or key == "escape" then
         love.event.quit()
+    elseif key == "return" then
+        if pauseState then
+            pauseState = nil
+        else
+            pauseState = "PAUSED"
+        end
     elseif key == "d" then
         debugMode = not debugMode
     end
@@ -158,11 +162,7 @@ end
 function love.update(dt)
     local input = getInput()
     
-    if not started then
-        if input.start then
-            started = true
-        end
-    else
+    if not pauseState then
         -- Process input
         if input.left then
             ship.heading = ship.heading + (shipRotateSpeed * dt)
@@ -293,9 +293,9 @@ function love.draw()
     
     love.graphics.setColor({255, 255, 255})
     
-    if not started then
-        local gameoverText = "GAME OVER"
-        love.graphics.print(gameoverText, (resWidth - font:getWidth(gameoverText)) / 2, (resHeight - font:getHeight(gameoverText)) / 2)
+    if pauseState then
+        local centerText = tostring(pauseState)
+        love.graphics.print(centerText, (resWidth - font:getWidth(centerText)) / 2, (resHeight - font:getHeight(centerText)) / 2)
     else
         -- Draw ship
         drawMirroredSprite(ship)
@@ -325,7 +325,8 @@ function love.draw()
     love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
     
     -- Draw score
-    local scoreText = started and "SCORE: "..tostring(player.score) or "HI-SCORE: "..tostring(highScore)
+    local scoreText = "SCORE: "..tostring(player.score)
+    if pauseState == "GAME OVER" then scoreText = "HI-SCORE: "..tostring(highScore) end
     love.graphics.print(scoreText, (resWidth - font:getWidth(scoreText)) / 2, (margin - font:getHeight(scoreText)) / 2)
     
     -- Draw lives
