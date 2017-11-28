@@ -17,16 +17,16 @@ startingStage = 0
 
 extraLivesScoreThreshold = 1000
 
-shipThrustSpeed = 2
+shipThrustSpeed = 1.5
 maxShipSpeed = 200
-shipRotateSpeed = math.rad(90)
+shipRotateSpeed = math.rad(180)
 
 shotSpeed = 200
 maxShots = 5
 shotCooldownTime = 1 / maxShots
 
 startingAsteroidsMin = 2
-startingAsteroidsMax = 8
+startingAsteroidsMax = 16
 
 startingAsteroidMaxSpeed = 25
 explodeSpeedMultiplier = 10/9
@@ -56,10 +56,13 @@ function resetStage()
     
     asteroids = Queue:new()
     for i = 1, numAsteroids do
+        local angle = math.rad(math.random(0, 360))
+        local ax = ship.x + Asteroid.r * math.random(4, 10) * math.cos(angle)
+        local ay = ship.y - Asteroid.r * math.random(4, 10) * math.sin(angle)
         local asteroid = Asteroid:new({
-            x = margin + (resWidth - 2 * margin) * math.random(),
-            y = margin + (resHeight - 2 * margin) * math.random(),
-            orientation = math.rad(math.random(0, 360)),
+            x = bound(ax, margin, resWidth - margin),
+            y = bound(ay, margin, resHeight - margin),
+            orientation = angle,
             dx = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
             dy = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
         })
@@ -74,8 +77,8 @@ function resetGame()
         stage = startingStage
     }
     
-    resetStage()
     resetShip()
+    resetStage()
     
     pauseState = "GAME OVER"
     newGame = true
@@ -308,8 +311,8 @@ function love.update(dt)
             -- Load next stage
             love.audio.play(sfx.start)
             player.stage = player.stage + 1
-            resetStage()
             resetShip()
+            resetStage()
         elseif not ship.isAlive and ship.deathTimeRemaining <= 0 then
             -- Ship has finished dying
             if player.lives >= 0 then
