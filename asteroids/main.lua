@@ -78,6 +78,7 @@ function resetGame()
     resetShip()
     
     pauseState = "GAME OVER"
+    newGame = true
 end
 
 function getInput()
@@ -121,6 +122,7 @@ function love.load()
     sfx.hit = love.audio.newSource("hit.ogg", "static")
     sfx.death = love.audio.newSource("death.ogg", "static")
     sfx.extralife = love.audio.newSource("extralife.ogg", "static")
+    sfx.start = love.audio.newSource("start.ogg", "static")
     
     math.randomseed(os.time())
     resetGame()
@@ -180,6 +182,11 @@ function love.update(dt)
     local input = getInput()
     
     if not pauseState then
+        if newGame then
+            love.audio.play(sfx.start)
+            newGame = false
+        end
+        
         -- Process input
         if input.left then
             ship.heading = ship.heading + (shipRotateSpeed * dt)
@@ -299,6 +306,7 @@ function love.update(dt)
         -- Gameover check
         if ship.isAlive and asteroids:count() == 0 then
             -- Load next stage
+            love.audio.play(sfx.start)
             player.stage = player.stage + 1
             resetStage()
             resetShip()
