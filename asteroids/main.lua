@@ -121,6 +121,7 @@ function love.load()
     
     -- Load sounds
     sfx = {}
+    sfx.thrust = love.audio.newSource("thrust.ogg", "static")
     sfx.shot = love.audio.newSource("shot.ogg", "static")
     sfx.hit = love.audio.newSource("hit.ogg", "static")
     sfx.death = love.audio.newSource("death.ogg", "static")
@@ -201,6 +202,7 @@ function love.update(dt)
         while ship.heading >= 2 * math.pi do ship.heading = ship.heading - 2 * math.pi end
         
         if input.thrust then
+            love.audio.play(sfx.thrust)
             local newThrust = {
                 dx = shipThrustSpeed * math.cos(ship.heading),
                 dy = -1 * shipThrustSpeed * math.sin(ship.heading),
