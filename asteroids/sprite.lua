@@ -105,7 +105,7 @@ function Asteroid:split(speedMultiplier)
     local a1 = Asteroid:new({
         x = self.x,
         y = self.y,
-        orientation = math.rad(math.random(0, 360)),
+        orientation = math.rad(love.math.random(0, 360)),
         dx = speedMultiplier * m * math.cos(d + math.rad(90)),
         dy = speedMultiplier * m * math.sin(d + math.rad(90)),
         r = self.r / 2
@@ -114,7 +114,7 @@ function Asteroid:split(speedMultiplier)
     local a2 = Asteroid:new({
         x = self.x,
         y = self.y,
-        orientation = math.rad(math.random(0, 360)),
+        orientation = math.rad(love.math.random(0, 360)),
         dx = speedMultiplier * m * math.cos(d - math.rad(90)),
         dy = speedMultiplier * m * math.sin(d - math.rad(90)),
         r = self.r / 2

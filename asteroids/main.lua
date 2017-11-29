@@ -56,15 +56,15 @@ function resetStage()
     
     asteroids = Queue:new()
     for i = 1, numAsteroids do
-        local angle = math.rad(math.random(0, 360))
-        local ax = ship.x + Asteroid.r * math.random(4, 10) * math.cos(angle)
-        local ay = ship.y - Asteroid.r * math.random(4, 10) * math.sin(angle)
+        local angle = math.rad(love.math.random(0, 360))
+        local ax = ship.x + Asteroid.r * love.math.random(4, 10) * math.cos(angle)
+        local ay = ship.y - Asteroid.r * love.math.random(4, 10) * math.sin(angle)
         local asteroid = Asteroid:new({
             x = bound(ax, margin, resWidth - margin),
             y = bound(ay, margin, resHeight - margin),
             orientation = angle,
-            dx = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
-            dy = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * math.random(),
+            dx = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * love.math.random(),
+            dy = -startingAsteroidMaxSpeed + (2 * startingAsteroidMaxSpeed) * love.math.random(),
         })
         asteroids:enqueue(asteroid)
     end
@@ -127,8 +127,7 @@ function love.load()
     sfx.death = love.audio.newSource("death.ogg", "static")
     sfx.extralife = love.audio.newSource("extralife.ogg", "static")
     sfx.start = love.audio.newSource("start.ogg", "static")
-    
-    math.randomseed(os.time())
+
     resetGame()
 end
 

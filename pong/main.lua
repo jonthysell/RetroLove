@@ -23,12 +23,12 @@ function resetBall()
     ball = {
         x = (resWidth - ballSize) / 2,
         y = (resHeight - ballSize) / 2,
-        dx = 0.5 + 0.1 * math.random(),
-        dy = 0.5 + 0.1 * math.random()
+        dx = 0.5 + 0.1 * love.math.random(),
+        dy = 0.5 + 0.1 * love.math.random()
     }
 
-    if math.random() > 0.5 then ball.dx = -ball.dx end
-    if math.random() > 0.5 then ball.dy = -ball.dy end
+    if love.math.random() > 0.5 then ball.dx = -ball.dx end
+    if love.math.random() > 0.5 then ball.dy = -ball.dy end
 end
 
 function resetPaddles()
@@ -96,7 +96,6 @@ function love.touchreleased(id, x, y, dx, dy, pressure)
 end
 
 function love.load()
-    math.randomseed(os.time())
     resetPaddles()
     resetBall()
     

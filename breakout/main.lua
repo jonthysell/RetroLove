@@ -34,11 +34,11 @@ function resetRound()
     ball = {
         x = (resWidth - ballSize) / 2,
         y = paddle.y - 3 * ballSize,
-        dx = 0.5 + 0.1 * math.random(),
-        dy = -1 * (0.5 + 0.1 * math.random())
+        dx = 0.5 + 0.1 * love.math.random(),
+        dy = -1 * (0.5 + 0.1 * love.math.random())
     }
 
-    if math.random() > 0.5 then ball.dx = -ball.dx end
+    if love.math.random() > 0.5 then ball.dx = -ball.dx end
     
     started = false
 end
@@ -163,7 +163,6 @@ function love.touchreleased(id, x, y, dx, dy, pressure)
 end
 
 function love.load()
-    math.randomseed(os.time())
     resetGame()
     
     -- Init offscreen graphics
