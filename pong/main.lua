@@ -266,7 +266,7 @@ function love.draw()
     -- Draw Debug Info
     if debugMode then
         local fpsText = "FPS: "..tostring(love.timer.getFPS())
-       love.graphics.print(fpsText, resWidth - (font:getWidth(fpsText) + margin / 4), resHeight - margin + ((margin - font:getHeight(fpsText)) / 2))
+        love.graphics.print(fpsText, resWidth - (font:getWidth(fpsText) + margin / 4), resHeight - margin + ((margin - font:getHeight(fpsText)) / 2))
     end
     
     -- Draw canvas to screen
