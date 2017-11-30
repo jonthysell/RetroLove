@@ -13,7 +13,6 @@ ballSpeed = 0.5
 
 paddleBounce = 1.1
 
-started = false
 debugMode = false
 
 screenWidth = love.graphics.getWidth()
@@ -50,7 +49,8 @@ function resetPaddles()
         score = 0,
     }
     
-    started = false
+    pauseState = "GAME OVER"
+    newGame = true
 end
 
 function getInput()
@@ -80,6 +80,12 @@ end
 function love.keyreleased(key)
     if key == "q" or key == "escape" then
         love.event.quit()
+    elseif key == "return" then
+        if pauseState then
+            pauseState = nil
+        else
+            pauseState = "PAUSED"
+        end
     elseif key == "d" then
         debugMode = not debugMode
     end
@@ -87,8 +93,12 @@ end
 
 function love.touchreleased(id, x, y, dx, dy, pressure)
     if x > screenWidth * .4 and x < screenWidth * .6 then
-        if y > screenHeight / 2 then
-            love.event.quit()
+        if y < screenHeight / 2 then
+            if pauseState then
+                pauseState = nil
+            else
+                pauseState = "PAUSED"
+            end
         else
             debugMode = not debugMode
         end
@@ -116,13 +126,13 @@ function love.resize()
 end
 
 function love.update(dt)
-    input = getInput()
+    local input = getInput()
     
-    if not started then
-        if input then
-            started = true
+    if not pauseState then
+        if newGame then
+            newGame = false
         end
-    else
+        
         -- Process input for left
         if input == "down" then
             left.y = left.y + (paddleHeight * paddleSpeed * dt)
@@ -219,23 +229,39 @@ function love.draw()
     
     love.graphics.clear()
     
-    -- Draw border
+    local font = love.graphics.getFont()
+    
+    love.graphics.setColor({255, 255, 255})
+    
+    if pauseState then
+        local centerText = tostring(pauseState)
+        love.graphics.print(centerText, (resWidth - font:getWidth(centerText)) / 2, (resHeight - font:getHeight(centerText)) / 2)
+    else
+        -- Draw center line
+        love.graphics.line(resWidth / 2, margin, resWidth / 2, resHeight - margin)
+        
+        -- Draw paddles
+        love.graphics.rectangle("fill", left.x, left.y, paddleWidth, paddleHeight)
+        love.graphics.rectangle("fill", right.x, right.y, paddleWidth, paddleHeight)
+        
+        -- Draw ball
+        love.graphics.rectangle("fill", ball.x, ball.y, ballSize, ballSize)
+    end
+    
+    -- Draw margins
+    love.graphics.setColor({0, 0, 0})
+    love.graphics.rectangle("fill", 0, 0, margin, resHeight - margin)
+    love.graphics.rectangle("fill", 0, resHeight - margin, resWidth - margin, resHeight)
+    love.graphics.rectangle("fill", margin, 0, resWidth, margin)
+    love.graphics.rectangle("fill", resWidth - margin, margin, resWidth, resHeight)
+    love.graphics.setColor({255, 255, 255})
     love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
     
-    local font = love.graphics.getFont()
-
     -- Draw score
     local leftScoreText = tostring(left.score)
     love.graphics.print(leftScoreText, (resWidth * .25) - (font:getWidth(leftScoreText)/ 2), ballSize / 2)
     local rightScoreText = tostring(right.score)
     love.graphics.print(rightScoreText, (resWidth * .75) - (font:getWidth(rightScoreText)/ 2), ballSize / 2)
-    
-    -- Draw paddles
-    love.graphics.rectangle("fill", left.x, left.y, paddleWidth, paddleHeight)
-    love.graphics.rectangle("fill", right.x, right.y, paddleWidth, paddleHeight)
-    
-    -- Draw ball
-    love.graphics.rectangle("fill", ball.x, ball.y, ballSize, ballSize)
     
     -- Draw Debug Info
     if debugMode then

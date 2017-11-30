@@ -147,8 +147,12 @@ end
 
 function love.touchreleased(id, x, y, dx, dy, pressure)
     if x > screenWidth * .4 and x < screenWidth * .6 then
-        if y > screenHeight / 2 then
-            love.event.quit()
+        if y < screenHeight / 2 then
+            if pauseState then
+                pauseState = nil
+            else
+                pauseState = "PAUSED"
+            end
         else
             debugMode = not debugMode
         end
