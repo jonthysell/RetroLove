@@ -11,24 +11,30 @@ highScore = 0
 paddleSpeed = 2
 ballSpeed = 0.5
 
-paddleBounce = 1.1
+minPaddleBounce = 1.0
+maxPaddleBounce = 1.1
 
-numRowsOfBlocks = 4
 numBlocksPerRow = 10
 
 blockColors = {
+    {148, 0, 211}, -- violet
+    {75, 0, 130}, -- indigo
+    {0, 0, 255}, -- blue
     {0, 255, 0}, -- green
     {255, 255, 0}, -- yellow
-    {255, 102, 0}, -- orange
+    {255, 127, 0}, -- orange
     {255, 0, 0}, -- red
 }
+
+minNumRowsOfBlocks = 1
+maxNumRowsOfBlocks = #blockColors
 
 debugMode = false
 
 screenWidth = love.graphics.getWidth()
 screenHeight = love.graphics.getHeight()
 
-function resetRound()
+function resetPaddle()
     paddle.x = (resWidth - paddleWidth) / 2
     paddle.y = resHeight - paddleHeight - ballSize - margin
     
@@ -44,6 +50,20 @@ function resetRound()
     started = false
 end
 
+function resetStage()
+    local stage = paddle.stage
+    
+    numRowsOfBlocks = math.min(minNumRowsOfBlocks + stage, maxNumRowsOfBlocks)
+    
+    blocks = {}
+    for row = 1, numRowsOfBlocks do
+        blocks[row] = {}
+        for col = 1, numBlocksPerRow do
+            blocks[row][col] = true
+        end
+    end
+end
+
 function resetGame()
     paddleHeight = resHeight * 0.015
     paddleWidth = resWidth * 0.15
@@ -57,17 +77,11 @@ function resetGame()
         moving = false,
         lives = 2,
         score = 0,
+        stage = 0,
     }
     
-    blocks = {}
-    for row = 1, numRowsOfBlocks do
-        blocks[row] = {}
-        for col = 1, numBlocksPerRow do
-            blocks[row][col] = true
-        end
-    end
-    
-    resetRound()
+    resetPaddle()
+    resetStage()
     
     pauseState = "GAME OVER"
     newGame = true
@@ -114,16 +128,15 @@ function ballHitsBlock(row, col)
     return hit
 end
 
-function gameOverCheck()
-    if paddle.lives >= 0 then
-        for row = 1, numRowsOfBlocks do
-            for col = 1, numBlocksPerRow do
-                if blocks[row][col] then return false end
-            end
+function remainingBlocks()
+    local sum = 0
+    for row = 1, numRowsOfBlocks do
+        for col = 1, numBlocksPerRow do
+            if blocks[row][col] then sum = sum + 1 end
         end
     end
     
-    return true
+    return sum
 end
 
 function getInput()
@@ -185,6 +198,7 @@ function love.load()
     love.graphics.setFont(love.graphics.newFont(margin * .7))
     
     -- Init sounds
+    startSFX = love.audio.newSource("start.ogg", "static")
     bounceSFX = love.audio.newSource("bounce.ogg", "static")
     hitSFX = love.audio.newSource("hit.ogg", "static")
 end
@@ -199,6 +213,7 @@ function love.update(dt)
     
     if not pauseState then
         if newGame then
+            love.audio.play(startSFX)
             newGame = false
         end
         
@@ -275,18 +290,25 @@ function love.update(dt)
                     ball.y = paddle.y - ballSize
                     ball.dy = -ball.dy
                     if paddle.moving then
-                        ball.dx = ball.dx * paddleBounce
-                        ball.dy = ball.dy * paddleBounce
+                        ball.dx = ball.dx * (minPaddleBounce + ((maxPaddleBounce - minPaddleBounce) * love.math.random()))
+                        ball.dy = ball.dy * (minPaddleBounce + ((maxPaddleBounce - minPaddleBounce) * love.math.random()))
                     end
                 elseif ball.y >= resHeight - margin then
                     -- paddle misses ball
                     paddle.lives = paddle.lives - 1
-                    resetRound()
+                    resetPaddle()
                 end
             end
             
-            if gameOverCheck() then
+            -- Gameover check
+            if paddle.lives < 0 then
                 resetGame()
+            elseif remainingBlocks() == 0 then
+                -- Load next stage
+                love.audio.play(startSFX)
+                paddle.stage = paddle.stage + 1
+                resetPaddle()
+                resetStage()
             end
         end
     end
