@@ -172,11 +172,11 @@ function love.update(dt)
         
         -- Process wall/ball collisions
         if ball.y < margin then
-            love.audio.play(bounceSFX)
+            love.audio.play(bounceSFX:clone())
             ball.y = margin
             ball.dy = -ball.dy
         elseif ball.y > resHeight - ballSize - margin then
-            love.audio.play(bounceSFX)
+            love.audio.play(bounceSFX:clone())
             ball.y = resHeight - ballSize - margin
             ball.dy = -ball.dy
         end
@@ -185,7 +185,7 @@ function love.update(dt)
             -- ball is crossing into left
             if ball.x > left.x and ball.y > left.y - ballSize and ball.y < left.y + paddleHeight then
                 -- left hits ball
-                love.audio.play(hitSFX)
+                love.audio.play(hitSFX:clone())
                 ball.x = left.x + paddleWidth
                 ball.dx = -ball.dx
                 if left.moving then
@@ -202,7 +202,7 @@ function love.update(dt)
             -- ball is crossing into right
             if ball.x + ballSize < right.x + paddleWidth and ball.y > right.y - ballSize and ball.y < right.y + paddleHeight then
                 -- right hits ball
-                love.audio.play(hitSFX)
+                love.audio.play(hitSFX:clone())
                 ball.x = right.x - ballSize
                 ball.dx = -ball.dx
                 if right.moving then
