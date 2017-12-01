@@ -246,11 +246,11 @@ function love.update(dt)
             
             -- Process wall/ball collisions
             if ball.x < margin then
-                love.audio.play(bounceSFX)
+                love.audio.play(bounceSFX:clone())
                 ball.x = margin
                 ball.dx = -ball.dx
             elseif ball.x > resWidth - ballSize - margin then
-                love.audio.play(bounceSFX)
+                love.audio.play(bounceSFX:clone())
                 ball.x = resWidth - ballSize - margin
                 ball.dx = -ball.dx
             end
@@ -272,21 +272,21 @@ function love.update(dt)
             end
             
             if blockHit > 0 then
-                love.audio.play(hitSFX)
+                love.audio.play(hitSFX:clone())
                 paddle.score = paddle.score + blockHit
                 highScore = math.max(highScore, paddle.score)
             end
             
             -- Process paddle collisions
             if ball.y < margin then
-                love.audio.play(bounceSFX)
+                love.audio.play(bounceSFX:clone())
                 ball.y = margin
                 ball.dy = -ball.dy
             elseif ball.y + ballSize > paddle.y then
                 -- ball is crossing into bottom
                 if ball.x + ballSize > paddle.x and ball.x < paddle.x + paddleWidth then
                     -- paddle hits ball
-                    love.audio.play(bounceSFX)
+                    love.audio.play(bounceSFX:clone())
                     ball.y = paddle.y - ballSize
                     ball.dy = -ball.dy
                     if paddle.moving then
