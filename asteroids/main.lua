@@ -281,7 +281,7 @@ function love.update(dt)
         
         if input.fire then
             if shots:count() < maxShots and timeSinceLastShot >= shotCooldownTime then
-                love.audio.play(sfx.shot)
+                love.audio.play(sfx.shot:clone())
                 local newShot = Shot:new({
                     x = ship.x + ship.r * math.cos(ship.heading),
                     y = ship.y - ship.r * math.sin(ship.heading),
@@ -329,7 +329,7 @@ function love.update(dt)
                 local asteroid = asteroids:dequeue()
                 hit = hit or mirroredCollision(shot, asteroid)
                 if hit then
-                    love.audio.play(sfx.hit)
+                    love.audio.play(sfx.hit:clone())
                     local beforeScore = player.score
                     player.score = player.score + asteroidValue / asteroid.r
                     highScore = math.max(highScore, player.score)
