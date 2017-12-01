@@ -14,8 +14,16 @@ function bound(value, min, max)
     return value
 end
 
+function map(value, amin, amax, bmin, bmax)
+    return bmin + (value - amin) * ((bmax - bmin) / (amax - amin))
+end
+
 function distance(x1, y1, x2, y2)
     return math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
+end
+
+function within(x, y, c)
+    return distance(x, y, c.x, c.y) <= c.r
 end
 
 function collision(c1, c2)

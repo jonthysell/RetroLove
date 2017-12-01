@@ -32,10 +32,9 @@ startingAsteroidMaxSpeed = 25
 explodeSpeedMultiplier = 10/9
 asteroidValue = 64
 
-debugMode = false
+enableTouchControls = false
 
-screenWidth = love.graphics.getWidth()
-screenHeight = love.graphics.getHeight()
+debugMode = false
 
 function resetShip()
     ship = Ship:new({
@@ -74,7 +73,7 @@ function resetGame()
     player = {
         score = 0,
         lives = startingLives,
-        stage = startingStage
+        stage = startingStage,
     }
     
     resetShip()
@@ -82,6 +81,41 @@ function resetGame()
     
     pauseState = "GAME OVER"
     newGame = true
+end
+
+function createTouchButtons()
+    local touchButtonRadius = math.min(screenHeight, screenWidth) / 10
+    
+    touchButtons = Queue:new()
+    
+    touchButtons:enqueue(TouchButton:new({
+        x = touchButtonRadius,
+        y = screenHeight - 2.5 * touchButtonRadius,
+        r = touchButtonRadius,
+        action = "left",
+    }))
+    
+    touchButtons:enqueue(TouchButton:new({
+        x = 2.5 * touchButtonRadius,
+        y = screenHeight - touchButtonRadius,
+        r = touchButtonRadius,
+        action = "right",
+    }))
+    
+    touchButtons:enqueue(TouchButton:new({
+        x = screenWidth - 2.5 * touchButtonRadius,
+        y = screenHeight - touchButtonRadius,
+        r = touchButtonRadius,
+        action = "thrust",
+    }))
+    
+    touchButtons:enqueue(TouchButton:new({
+        x = screenWidth - touchButtonRadius,
+        y = screenHeight - 2.5 * touchButtonRadius,
+        r = touchButtonRadius,
+        action = "fire",
+    }))
+    
 end
 
 function getInput()
@@ -100,12 +134,30 @@ function getInput()
         if love.keyboard.isDown("up") then input.thrust = true end
         if love.keyboard.isDown("space") then input.fire = true end
         
-        -- Process Touch
-        if love.touch then
+        if enableTouchControls then
             local touches = love.touch.getTouches()
-            for i, id in ipairs(touches) do
-                local x, y = love.touch.getPosition(id)
-                -- TODO
+            
+            -- Process TouchButtons
+            for tB = 1, touchButtons:count() do
+                local touchButton = touchButtons:dequeue()
+                touchButton.isPressed = false
+                
+                for i, id in ipairs(touches) do
+                    local x, y = love.touch.getPosition(id)
+                    if within(x, y, touchButton) then
+                        touchButton.isPressed = true
+                        break
+                    end
+                end
+                
+                if touchButton.isPressed then
+                    if touchButton.action == "left" then input.left = true end
+                    if touchButton.action == "right" then input.right = true end
+                    if touchButton.action == "thrust" then input.thrust = true end
+                    if touchButton.action == "fire" then input.fire = true end
+                end
+                
+                touchButtons:enqueue(touchButton)
             end
         end
     end
@@ -114,6 +166,8 @@ function getInput()
 end
 
 function love.load()
+    love.resize()
+    
     -- Init offscreen graphics
     canvas = love.graphics.newCanvas(resWidth, resHeight)
     canvas:setFilter("nearest", "nearest", 0)
@@ -127,6 +181,9 @@ function love.load()
     sfx.death = love.audio.newSource("death.ogg", "static")
     sfx.extralife = love.audio.newSource("extralife.ogg", "static")
     sfx.start = love.audio.newSource("start.ogg", "static")
+    
+    enableTouchControls = love.touch and (love.system.getOS() == "Android" or love.system.getOS() == "iOS")
+    if enableTouchControls then createTouchButtons() end
 
     resetGame()
 end
@@ -146,15 +203,17 @@ function love.keyreleased(key)
 end
 
 function love.touchreleased(id, x, y, dx, dy, pressure)
-    if x > screenWidth * .4 and x < screenWidth * .6 then
-        if y < screenHeight / 2 then
-            if pauseState then
-                pauseState = nil
+    if enableTouchControls then
+        if x > screenWidth * .4 and x < screenWidth * .6 then
+            if y < screenHeight / 2 then
+                if pauseState then
+                    pauseState = nil
+                else
+                    pauseState = "PAUSED"
+                end
             else
-                pauseState = "PAUSED"
+                debugMode = not debugMode
             end
-        else
-            debugMode = not debugMode
         end
     end
 end
@@ -162,6 +221,10 @@ end
 function love.resize()
     screenWidth = love.graphics.getWidth()
     screenHeight = love.graphics.getHeight()
+    
+    scale = math.min(screenWidth / resWidth, screenHeight / resHeight)
+    canvasOriginX = (screenWidth - resWidth * scale) / 2
+    canvasOriginY = (screenHeight - resHeight * scale) / 2
 end
 
 function mirroredCollision(s1, s2)
@@ -401,7 +464,15 @@ function love.draw()
     
     -- Draw canvas to screen
     love.graphics.setCanvas()
+    love.graphics.draw(canvas, canvasOriginX, canvasOriginY, 0, scale, scale)
     
-    scale = math.min(screenWidth / resWidth, screenHeight / resHeight)
-    love.graphics.draw(canvas, (screenWidth - resWidth * scale) / 2, (screenHeight - resHeight * scale) / 2, 0, scale, scale)
+    -- Draw touch controls
+    if enableTouchControls then
+        love.graphics.setColor({255, 255, 255, 127})
+        for i = 1, touchButtons:count() do
+            local touchButton = touchButtons:dequeue()
+            touchButton:draw()
+            touchButtons:enqueue(touchButton)
+        end
+    end
 end

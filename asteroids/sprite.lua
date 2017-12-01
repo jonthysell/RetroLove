@@ -148,3 +148,20 @@ function Asteroid:draw(ox, oy)
     
     love.graphics.polygon("line", p)
 end
+
+--TouchButton
+TouchButton = Sprite:new({
+    isPressed = false,
+    action = ""
+})
+
+function TouchButton:draw(ox, oy)
+    local ox = ox or self.x
+    local oy = oy or self.y
+    
+    if self.isPressed then
+        love.graphics.circle("fill", ox, oy, self.r)
+    else
+        love.graphics.circle("line", ox, oy, self.r)
+    end
+end
