@@ -480,10 +480,10 @@ function love.draw()
     -- Draw lives
     local livesText = "x "..tostring(math.max(0, player.lives))
     lifeShip.r = font:getHeight(livesText) / 2
-    lifeShip.x = margin + lifeShip.r
-    lifeShip.y = resHeight - margin + ((margin - font:getHeight(livesText)) / 2) + lifeShip.r
+    lifeShip.x = margin + lifeShip.r * 0.5
+    lifeShip.y = ((margin - font:getHeight(livesText)) / 2) + lifeShip.r
     lifeShip:draw()
-    love.graphics.print(livesText, lifeShip.x + lifeShip.r, resHeight - margin + ((margin - font:getHeight(livesText)) / 2))
+    love.graphics.print(livesText, lifeShip.x + lifeShip.r, lifeShip.y - font:getHeight(livesText)/ 2)
     
     -- Draw Debug Info
     if debugMode then
