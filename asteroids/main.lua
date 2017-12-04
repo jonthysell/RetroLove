@@ -17,7 +17,7 @@ startingLives = 2
 startingShieldTime = 3
 startingStage = 0
 
-extraLivesScoreThreshold = 1000
+extraLivesScoreThreshold = 5000
 
 shipThrustSpeed = 1.5
 maxShipSpeed = 200
@@ -32,7 +32,7 @@ startingAsteroidsMax = 16
 
 startingAsteroidMaxSpeed = 25
 explodeSpeedMultiplier = 10/9
-asteroidValue = 64
+asteroidValue = 160
 
 enableTouchControls = false
 
@@ -466,9 +466,10 @@ function love.draw()
     love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
     
     -- Draw score
-    local scoreText = "SCORE: "..tostring(player.score)
-    if pauseState == "GAME OVER" then scoreText = "HI-SCORE: "..tostring(highScore) end
-    love.graphics.print(scoreText, (resWidth - font:getWidth(scoreText)) / 2, (margin - font:getHeight(scoreText)) / 2)
+    local scoreText = comma_value(player.score)
+    love.graphics.print(scoreText, (resWidth * 0.5 - font:getWidth(scoreText)), (margin - font:getHeight(scoreText)) / 2)
+    local highScoreText = "HI: "..comma_value(highScore)
+    love.graphics.print(highScoreText, (resWidth - margin - font:getWidth(highScoreText)), (margin - font:getHeight(highScoreText)) / 2)
     
     -- Draw lives
     local livesText = "x"..tostring(math.max(0, player.lives))
