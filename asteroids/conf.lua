@@ -3,6 +3,7 @@
 
 function love.conf(t)
     t.window.title = "RetroLove - Asteroids"
+    t.identity = "com.jonthysell.retrolove"
     t.window.resizable = true
     t.window.minwidth = 320
     t.window.minheight = 240

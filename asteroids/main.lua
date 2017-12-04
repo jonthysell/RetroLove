@@ -11,6 +11,8 @@ resHeight = 240
 margin = 20
 
 highScore = 0
+highScoreFile = "asteroids.highscore.txt"
+
 startingLives = 2
 startingShieldTime = 3
 startingStage = 0
@@ -35,6 +37,15 @@ asteroidValue = 64
 enableTouchControls = false
 
 debugMode = false
+
+function loadState()
+    local contents = love.filesystem.read(highScoreFile)
+    if contents then highScore = tonumber(contents) end
+end
+
+function saveState()
+    love.filesystem.write(highScoreFile, tostring(highScore))
+end
 
 function resetShip()
     ship = Ship:new({
@@ -81,6 +92,8 @@ function resetGame()
     
     pauseState = "GAME OVER"
     newGame = true
+    
+    saveState()
 end
 
 function createTouchButtons()
@@ -167,6 +180,8 @@ end
 
 function love.load()
     love.resize()
+    
+    loadState()
     
     -- Init offscreen graphics
     canvas = love.graphics.newCanvas(resWidth, resHeight)

@@ -7,6 +7,7 @@ resHeight = 240
 margin = 20
 
 highScore = 0
+highScoreFile = "breakout.highscore.txt"
 
 paddleSpeed = 2
 ballSpeed = 0.5
@@ -33,6 +34,15 @@ debugMode = false
 
 screenWidth = love.graphics.getWidth()
 screenHeight = love.graphics.getHeight()
+
+function loadState()
+    local contents = love.filesystem.read(highScoreFile)
+    if contents then highScore = tonumber(contents) end
+end
+
+function saveState()
+    love.filesystem.write(highScoreFile, tostring(highScore))
+end
 
 function resetPaddle()
     paddle.x = (resWidth - paddleWidth) / 2
@@ -85,6 +95,8 @@ function resetGame()
     
     pauseState = "GAME OVER"
     newGame = true
+    
+    saveState()
 end
 
 function ballHitsBlock(row, col)
@@ -190,6 +202,9 @@ function love.touchreleased(id, x, y, dx, dy, pressure)
 end
 
 function love.load()
+    loadState()
+    
+    -- Setup game
     resetGame()
     
     -- Init offscreen graphics
