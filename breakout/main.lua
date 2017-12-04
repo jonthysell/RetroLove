@@ -44,6 +44,12 @@ function saveState()
     love.filesystem.write(highScoreFile, tostring(highScore))
 end
 
+function love.focus(f) if not f then saveState() end end
+
+function love.visible(v) if not v then saveState() end end
+
+function love.quit() saveState() end
+
 function resetPaddle()
     paddle.x = (resWidth - paddleWidth) / 2
     paddle.y = resHeight - paddleHeight - ballSize - margin

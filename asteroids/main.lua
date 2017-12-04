@@ -47,6 +47,12 @@ function saveState()
     love.filesystem.write(highScoreFile, tostring(highScore))
 end
 
+function love.focus(f) if not f then saveState() end end
+
+function love.visible(v) if not v then saveState() end end
+
+function love.quit() saveState() end
+
 function resetShip()
     ship = Ship:new({
         x = resWidth / 2,
