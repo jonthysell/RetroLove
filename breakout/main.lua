@@ -105,6 +105,11 @@ function resetGame()
     saveState()
 end
 
+function comma_value(n) -- credit http://richard.warburton.it
+	local left,num,right = string.match(n,'^([^%d]*%d)(%d*)(.-)$')
+	return left..(num:reverse():gsub('(%d%d%d)','%1,'):reverse())..right
+end
+
 function ballHitsBlock(row, col)
     local x, y = margin + (col - 1) * blockWidth, margin + (numRowsOfBlocks - row + 1) * blockHeight
     
@@ -294,7 +299,7 @@ function love.update(dt)
             
             if blockHit > 0 then
                 love.audio.play(hitSFX:clone())
-                paddle.score = paddle.score + blockHit
+                paddle.score = paddle.score + 10 * blockHit
                 highScore = math.max(highScore, paddle.score)
             end
             
@@ -379,9 +384,10 @@ function love.draw()
     love.graphics.setColor(255, 255, 255, 255)
     
     -- Draw score
-        local scoreText = "SCORE: "..tostring(paddle.score)
-    if pauseState == "GAME OVER" then scoreText = "HI-SCORE: "..tostring(highScore) end
-    love.graphics.print(scoreText, (resWidth - font:getWidth(scoreText)) / 2, (margin - font:getHeight(scoreText)) / 2)
+    local scoreText = comma_value(paddle.score)
+    love.graphics.print(scoreText, (resWidth * 0.5 - font:getWidth(scoreText)), (margin - font:getHeight(scoreText)) / 2)
+    local highScoreText = "HI: "..comma_value(highScore)
+    love.graphics.print(highScoreText, (resWidth - margin - font:getWidth(highScoreText)), (margin - font:getHeight(highScoreText)) / 2)
     
     -- Draw lives
     local livesText = "x"..tostring(math.max(0, paddle.lives))
