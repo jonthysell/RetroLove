@@ -194,6 +194,10 @@ function love.load()
     canvas:setFilter("nearest", "nearest", 0)
     love.graphics.setFont(love.graphics.newFont(margin * .7))
     
+    lifeShip = Ship:new({
+        heading = math.rad(90),
+    })
+    
     -- Load sounds
     sfx = {}
     sfx.thrust = love.audio.newSource("thrust.ogg", "static")
@@ -474,8 +478,12 @@ function love.draw()
     love.graphics.print(highScoreText, (resWidth - margin - font:getWidth(highScoreText)), (margin - font:getHeight(highScoreText)) / 2)
     
     -- Draw lives
-    local livesText = "x"..tostring(math.max(0, player.lives))
-    love.graphics.print(livesText, margin / 4, resHeight - margin + ((margin - font:getHeight(livesText)) / 2))
+    local livesText = "x "..tostring(math.max(0, player.lives))
+    lifeShip.r = font:getHeight(livesText) / 2
+    lifeShip.x = margin + lifeShip.r
+    lifeShip.y = resHeight - margin + ((margin - font:getHeight(livesText)) / 2) + lifeShip.r
+    lifeShip:draw()
+    love.graphics.print(livesText, lifeShip.x + lifeShip.r, resHeight - margin + ((margin - font:getHeight(livesText)) / 2))
     
     -- Draw Debug Info
     if debugMode then
