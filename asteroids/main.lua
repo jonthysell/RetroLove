@@ -288,7 +288,9 @@ function love.update(dt)
         while ship.heading < 0 do ship.heading = ship.heading + 2 * math.pi end
         while ship.heading >= 2 * math.pi do ship.heading = ship.heading - 2 * math.pi end
         
-        if input.thrust then
+        ship.isThrusting = input.thrust
+        
+        if ship.isThrusting then
             love.audio.play(sfx.thrust)
             local newThrust = {
                 dx = shipThrustSpeed * math.cos(ship.heading),
