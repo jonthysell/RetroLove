@@ -53,7 +53,7 @@ function love.quit() saveState() end
 function resetPaddle()
     paddle.x = (resWidth - paddleWidth) / 2
     paddle.y = resHeight - paddleHeight - ballSize - margin
-    
+
     ball = {
         x = (resWidth - ballSize) / 2,
         y = paddle.y - 3 * ballSize,
@@ -62,15 +62,15 @@ function resetPaddle()
     }
 
     if love.math.random() > 0.5 then ball.dx = -ball.dx end
-    
+
     started = false
 end
 
 function resetStage()
     local stage = paddle.stage
-    
+
     numRowsOfBlocks = math.min(minNumRowsOfBlocks + stage, maxNumRowsOfBlocks)
-    
+
     blocks = {}
     for row = 1, numRowsOfBlocks do
         blocks[row] = {}
@@ -83,25 +83,25 @@ end
 function resetGame()
     paddleHeight = resHeight * 0.015
     paddleWidth = resWidth * 0.15
-    
+
     ballSize = paddleHeight
-    
+
     blockHeight = paddleHeight * 2
     blockWidth = (resWidth - 2 * margin) / numBlocksPerRow
-    
+
     paddle = {
         moving = false,
         lives = 2,
         score = 0,
         stage = 0,
     }
-    
+
     resetPaddle()
     resetStage()
-    
+
     pauseState = "GAME OVER"
     newGame = true
-    
+
     saveState()
 end
 
@@ -112,15 +112,15 @@ end
 
 function ballHitsBlock(row, col)
     local x, y = margin + (col - 1) * blockWidth, margin + (numRowsOfBlocks - row + 1) * blockHeight
-    
+
     -- Find intersection
     local ix1 = math.max(ball.x, x)
     local iy1 = math.max(ball.y, y)
     local ix2 = math.min(ball.x + ballSize, x + blockWidth)
     local iy2 = math.min(ball.y + ballSize, y + blockHeight)
-    
+
     local hit = false
-    
+
     if ix1 < ix2 and iy1 < iy2 then
         -- Valid intersection
         if ix1 > ball.x then
@@ -134,7 +134,7 @@ function ballHitsBlock(row, col)
             ball.dx = -ball.dx
             hit = true
         end
-        
+
         if iy1 > ball.y then
             -- ball hit top
             ball.y = y - ballSize
@@ -147,7 +147,7 @@ function ballHitsBlock(row, col)
             hit = true
         end
     end
-    
+
     return hit
 end
 
@@ -158,7 +158,7 @@ function remainingBlocks()
             if blocks[row][col] then sum = sum + 1 end
         end
     end
-    
+
     return sum
 end
 
@@ -168,7 +168,7 @@ function getInput()
     elseif love.keyboard.isDown("right") then
         return "right"
     end
-    
+
     if love.touch then
         local touches = love.touch.getTouches()
         for i, id in ipairs(touches) do
@@ -180,7 +180,7 @@ function getInput()
             end
         end
     end
-    
+
     return nil
 end
 
@@ -214,15 +214,15 @@ end
 
 function love.load()
     loadState()
-    
+
     -- Setup game
     resetGame()
-    
+
     -- Init offscreen graphics
     canvas = love.graphics.newCanvas(resWidth, resHeight)
     canvas:setFilter("nearest", "nearest", 0)
     love.graphics.setFont(love.graphics.newFont(margin * .7))
-    
+
     -- Init sounds
     startSFX = love.audio.newSource("start.ogg", "static")
     bounceSFX = love.audio.newSource("bounce.ogg", "static")
@@ -236,13 +236,13 @@ end
 
 function love.update(dt)
     local input = getInput()
-    
+
     if not pauseState then
         if newGame then
             love.audio.play(startSFX)
             newGame = false
         end
-        
+
         if not started then
             if input then
                 started = true
@@ -258,18 +258,18 @@ function love.update(dt)
             else
                 paddle.moving = false
             end
-            
+
             -- Process paddle bounds
             paddle.x = math.max(paddle.x, margin)
             paddle.x = math.min(paddle.x, resWidth - paddleWidth - margin)
-            
+
             -- Process ball movement
             ball.dx = math.min(1, math.max(ball.dx, -1))
             ball.dy = math.min(1, math.max(ball.dy, -1))
-            
+
             ball.x = ball.x + (ball.dx * ballSpeed * math.min(resHeight, resWidth) * dt)
             ball.y = ball.y + (ball.dy * ballSpeed * math.min(resHeight, resWidth) * dt)
-            
+
             -- Process wall/ball collisions
             if ball.x < margin then
                 love.audio.play(bounceSFX:clone())
@@ -280,7 +280,7 @@ function love.update(dt)
                 ball.x = resWidth - ballSize - margin
                 ball.dx = -ball.dx
             end
-            
+
             -- Process block collisions
             local blockHit = 0
             for row = 1, numRowsOfBlocks do
@@ -296,13 +296,13 @@ function love.update(dt)
                 end
                 if blockHit > 0 then break end
             end
-            
+
             if blockHit > 0 then
                 love.audio.play(hitSFX:clone())
                 paddle.score = paddle.score + 10 * blockHit
                 highScore = math.max(highScore, paddle.score)
             end
-            
+
             -- Process paddle collisions
             if ball.y < margin then
                 love.audio.play(bounceSFX:clone())
@@ -325,7 +325,7 @@ function love.update(dt)
                     resetPaddle()
                 end
             end
-            
+
             -- Gameover check
             if paddle.lives < 0 then
                 resetGame()
@@ -343,23 +343,23 @@ end
 function love.draw()
     -- Draw to canvas
     love.graphics.setCanvas(canvas)
-    
+
     love.graphics.clear()
 
     local font = love.graphics.getFont()
-    
+
     love.graphics.setColor({255, 255, 255})
-    
+
     if pauseState then
         local centerText = tostring(pauseState)
         love.graphics.print(centerText, (resWidth - font:getWidth(centerText)) / 2, (resHeight - font:getHeight(centerText)) / 2)
     else
         -- Draw paddle
         love.graphics.rectangle("fill", paddle.x, paddle.y, paddleWidth, paddleHeight)
-        
+
         -- Draw ball
         love.graphics.circle("fill", ball.x + (ballSize / 2), ball.y + (ballSize / 2), ballSize / 2)
-        
+
         -- Draw blocks
         for row = 1, numRowsOfBlocks do
             for col = 1, numBlocksPerRow do
@@ -371,7 +371,7 @@ function love.draw()
             end
         end
     end
-    
+
     -- Draw margins
     love.graphics.setColor({0, 0, 0})
     love.graphics.rectangle("fill", 0, 0, margin, resHeight - margin)
@@ -380,28 +380,28 @@ function love.draw()
     love.graphics.rectangle("fill", resWidth - margin, margin, resWidth, resHeight)
     love.graphics.setColor({255, 255, 255})
     love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
-    
+
     love.graphics.setColor(255, 255, 255, 255)
-    
+
     -- Draw score
     local scoreText = comma_value(paddle.score)
     love.graphics.print(scoreText, (resWidth * 0.5 - font:getWidth(scoreText)), (margin - font:getHeight(scoreText)) / 2)
     local highScoreText = "HI: "..comma_value(highScore)
     love.graphics.print(highScoreText, (resWidth - margin - font:getWidth(highScoreText)), (margin - font:getHeight(highScoreText)) / 2)
-    
+
     -- Draw lives
     local livesText = "x"..tostring(math.max(0, paddle.lives))
     love.graphics.print(livesText, margin / 4, resHeight - margin + ((margin - font:getHeight(livesText)) / 2))
-    
+
     -- Draw Debug Info
     if debugMode then
         local fpsText = "FPS: "..tostring(love.timer.getFPS())
         love.graphics.print(fpsText, resWidth - (font:getWidth(fpsText) + margin / 4), resHeight - margin + ((margin - font:getHeight(fpsText)) / 2))
     end
-    
+
     -- Draw canvas to screen
     love.graphics.setCanvas()
-    
+
     scale = math.min(screenWidth / resWidth, screenHeight / resHeight)
     love.graphics.draw(canvas, (screenWidth - resWidth * scale) / 2, (screenHeight - resHeight * scale) / 2, 0, scale, scale)
 end

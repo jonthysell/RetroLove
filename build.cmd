@@ -1,5 +1,5 @@
 @echo off
-setlocal 
+setlocal
 
 call asteroids\build.cmd
 call breakout\build.cmd

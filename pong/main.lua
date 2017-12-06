@@ -34,21 +34,21 @@ function resetPaddles()
     paddleHeight = resHeight * 0.2
     paddleWidth = resWidth * 0.0125
     ballSize = paddleWidth
-    
+
     left = {
         x = paddleWidth + margin,
         y = (resHeight - paddleHeight) / 2,
         moving = false,
         score = 0,
     }
-    
+
     right = {
         x = resWidth - (2 * paddleWidth + margin),
         y = (resHeight - paddleHeight) / 2,
         moving = false,
         score = 0,
     }
-    
+
     pauseState = "GAME OVER"
     newGame = true
 end
@@ -59,7 +59,7 @@ function getInput()
     elseif love.keyboard.isDown("up") then
         return "up"
     end
-    
+
     if love.touch then
         local touches = love.touch.getTouches()
         for i, id in ipairs(touches) do
@@ -73,7 +73,7 @@ function getInput()
             end
         end
     end
-    
+
     return nil
 end
 
@@ -108,12 +108,12 @@ end
 function love.load()
     resetPaddles()
     resetBall()
-    
+
     -- Init offscreen graphics
     canvas = love.graphics.newCanvas(resWidth, resHeight)
     canvas:setFilter("nearest", "nearest", 0)
     love.graphics.setFont(love.graphics.newFont(margin * .7))
-    
+
     -- Init sounds
     bounceSFX = love.audio.newSource("bounce.ogg", "static")
     hitSFX = love.audio.newSource("hit.ogg", "static")
@@ -127,12 +127,12 @@ end
 
 function love.update(dt)
     local input = getInput()
-    
+
     if not pauseState then
         if newGame then
             newGame = false
         end
-        
+
         -- Process input for left
         if input == "down" then
             left.y = left.y + (paddleHeight * paddleSpeed * dt)
@@ -143,7 +143,7 @@ function love.update(dt)
         else
             left.moving = false
         end
-        
+
         -- Process AI for right
         if ball.dx > 0 then
             if ball.y + (ballSize / 2) > right.y + paddleHeight then
@@ -156,20 +156,20 @@ function love.update(dt)
                 right.moving = false
             end
         end
-        
+
         -- Process paddle bounds
         left.y = math.max(left.y, margin)
         left.y = math.min(left.y, resHeight - paddleHeight - margin)
         right.y = math.max(right.y, margin)
         right.y = math.min(right.y, resHeight - paddleHeight - margin)
-        
+
         -- Process ball movement
         ball.dx = math.min(1, math.max(ball.dx, -1))
         ball.dy = math.min(1, math.max(ball.dy, -1))
-        
+
         ball.x = ball.x + (ball.dx * ballSpeed * math.min(resHeight, resWidth) * dt)
         ball.y = ball.y + (ball.dy * ballSpeed * math.min(resHeight, resWidth) * dt)
-        
+
         -- Process wall/ball collisions
         if ball.y < margin then
             love.audio.play(bounceSFX:clone())
@@ -180,7 +180,7 @@ function love.update(dt)
             ball.y = resHeight - ballSize - margin
             ball.dy = -ball.dy
         end
-        
+
         if ball.x < left.x + paddleWidth then
             -- ball is crossing into left
             if ball.x > left.x and ball.y > left.y - ballSize and ball.y < left.y + paddleHeight then
@@ -216,7 +216,7 @@ function love.update(dt)
                 resetBall()
             end
         end
-        
+
         if left.score == scoreToWin or right.score == scoreToWin then
             resetPaddles()
         end
@@ -226,28 +226,28 @@ end
 function love.draw()
     -- Draw to canvas
     love.graphics.setCanvas(canvas)
-    
+
     love.graphics.clear()
-    
+
     local font = love.graphics.getFont()
-    
+
     love.graphics.setColor({255, 255, 255})
-    
+
     if pauseState then
         local centerText = tostring(pauseState)
         love.graphics.print(centerText, (resWidth - font:getWidth(centerText)) / 2, (resHeight - font:getHeight(centerText)) / 2)
     else
         -- Draw center line
         love.graphics.line(resWidth / 2, margin, resWidth / 2, resHeight - margin)
-        
+
         -- Draw paddles
         love.graphics.rectangle("fill", left.x, left.y, paddleWidth, paddleHeight)
         love.graphics.rectangle("fill", right.x, right.y, paddleWidth, paddleHeight)
-        
+
         -- Draw ball
         love.graphics.rectangle("fill", ball.x, ball.y, ballSize, ballSize)
     end
-    
+
     -- Draw margins
     love.graphics.setColor({0, 0, 0})
     love.graphics.rectangle("fill", 0, 0, margin, resHeight - margin)
@@ -256,22 +256,22 @@ function love.draw()
     love.graphics.rectangle("fill", resWidth - margin, margin, resWidth, resHeight)
     love.graphics.setColor({255, 255, 255})
     love.graphics.rectangle("line", margin - 1 , margin - 1, resWidth - 2 * (margin - 1), resHeight - (2 * margin - 1))
-    
+
     -- Draw score
     local leftScoreText = tostring(left.score)
     love.graphics.print(leftScoreText, (resWidth * .25) - (font:getWidth(leftScoreText)/ 2), ballSize / 2)
     local rightScoreText = tostring(right.score)
     love.graphics.print(rightScoreText, (resWidth * .75) - (font:getWidth(rightScoreText)/ 2), ballSize / 2)
-    
+
     -- Draw Debug Info
     if debugMode then
         local fpsText = "FPS: "..tostring(love.timer.getFPS())
         love.graphics.print(fpsText, resWidth - (font:getWidth(fpsText) + margin / 4), resHeight - margin + ((margin - font:getHeight(fpsText)) / 2))
     end
-    
+
     -- Draw canvas to screen
     love.graphics.setCanvas()
-    
+
     scale = math.min(screenWidth / resWidth, screenHeight / resHeight)
     love.graphics.draw(canvas, (screenWidth - resWidth * scale) / 2, (screenHeight - resHeight * scale) / 2, 0, scale, scale)
 end
