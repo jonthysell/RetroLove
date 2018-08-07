@@ -6,14 +6,15 @@ local retrolove = {}
 function retrolove.load()
     local menu = require "menu"
     retrolove.mainMenu = menu.Menu:new({})
+
     -- load games
+    local pong = require "pong.pong"
+    retrolove.mainMenu:addGame(pong.Pong:new({id="pong1"}))
+    retrolove.mainMenu:addGame(pong.Pong:new({id="pong2"}))
+    retrolove.mainMenu:addGame(pong.Pong:new({id="pong3"}))
     
     retrolove.currentGame = retrolove.mainMenu
     retrolove.currentGame:init()
-end
-
-function retrolove.resize()
-    retrolove.currentGame:resize()
 end
 
 function retrolove.update(dt)
@@ -24,6 +25,18 @@ function retrolove.draw()
     retrolove.currentGame:draw()
 end
 
+function retrolove.keyreleased(key)
+    retrolove.currentGame:keyReleased(key)
+end
+
+function retrolove.touchreleased(id, x, y, dx, dy, pressure)
+    retrolove.currentGame:touchReleased(id, x, y, dx, dy, pressure)
+end
+
+function retrolove.resize()
+    retrolove.currentGame:resize()
+end
+
 function retrolove.activate(isActive)
     if not isActive then
         if retrolove.currentGame.saveState then retrolove.currentGame:saveState() end
@@ -32,9 +45,11 @@ end
 
 function retrolove.switchGame(game)
     if game then
-        self.curentGame = game
-        self.currentGame:init()
+        print("Switching to "..game.id)
+        retrolove.currentGame = game
+        retrolove.currentGame:init()
     else
+        print("Exiting...")
         love.event.quit()
     end
 end
