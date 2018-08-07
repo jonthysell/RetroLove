@@ -28,7 +28,6 @@ function Game:init()
 
     if self.initGame then self:initGame() end
     if self.loadState then self:loadState() end
-    if self.reset then self:reset() end
 
     self.active = true
 end

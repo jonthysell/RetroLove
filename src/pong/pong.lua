@@ -1,4 +1,4 @@
--- pong\main.lua
+-- pong\pong.lua
 -- Copyright (c) 2017-2018 Jon Thysell
 
 local game = require "game"

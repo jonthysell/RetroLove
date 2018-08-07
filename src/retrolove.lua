@@ -9,9 +9,10 @@ function retrolove.load()
 
     -- load games
     local pong = require "pong.pong"
-    retrolove.mainMenu:addGame(pong.Pong:new({id="pong1"}))
-    retrolove.mainMenu:addGame(pong.Pong:new({id="pong2"}))
-    retrolove.mainMenu:addGame(pong.Pong:new({id="pong3"}))
+    retrolove.mainMenu:addGame(pong.Pong:new({}))
+
+    local breakout = require "breakout.breakout"
+    retrolove.mainMenu:addGame(breakout.Breakout:new({}))
     
     retrolove.currentGame = retrolove.mainMenu
     retrolove.currentGame:init()
