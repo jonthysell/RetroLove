@@ -37,9 +37,9 @@ function Menu:touchReleasedGame(id, x, y, dx, dy, pressure)
 
             local scaledRect = {
                 x = boxX * self.scale,
-                y = boxTop * scale,
-                width = boxSize * scale,
-                height = boxSize * scale,
+                y = boxTop * self.scale,
+                width = boxSize * self.scale,
+                height = boxSize * self.scale,
             }
 
             if x > scaledRect.x and x < scaledRect.x + scaledRect.width and y > scaledRect.y and y < scaledRect.y + scaledRect.height then
@@ -74,7 +74,7 @@ function Menu:drawGame()
 
             if self.selectedGame == i then
                 love.graphics.setColor({0, 255, 255, 255})
-                love.graphics.rectangle("line", x, boxTop, boxSize, boxSize)
+                love.graphics.rectangle("line", boxX, boxTop, boxSize, boxSize)
                 love.graphics.print(title, boxX + (boxSize - font:getWidth(title)) / 2, (self.resHeight - font:getHeight(title)) / 2)
             end
         end

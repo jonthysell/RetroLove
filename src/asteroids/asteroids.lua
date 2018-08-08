@@ -106,8 +106,8 @@ function Asteroids:createTouchButtons()
     }))
 
     self.touchButtons:enqueue(sprite.TouchButton:new({
-        x = screenWidth - 2.5 * touchButtonRadius,
-        y = screenHeight - touchButtonRadius,
+        x = self.screenWidth - 2.5 * touchButtonRadius,
+        y = self.screenHeight - touchButtonRadius,
         r = touchButtonRadius,
         action = "thrust",
     }))
