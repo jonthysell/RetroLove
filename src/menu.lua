@@ -58,6 +58,10 @@ function Menu:drawGame()
     -- Draw to canvas
     local font = love.graphics.getFont()
 
+    love.graphics.setColor({255, 255, 255, 255})
+    local titleText = tostring("RetroLove")
+    love.graphics.print(titleText, (self.resWidth - font:getWidth(titleText)) / 2, 2 * self.margin)
+
     if #self.games > 0 then
         local boxSize = self.boxSize
         local boxTop = (self.resHeight - boxSize) / 2
