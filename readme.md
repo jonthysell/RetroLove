@@ -6,9 +6,9 @@ RetroLove is a collection of simple games built on the LOVE game framework.
 
 Follow the LOVE setup instructions here: [Getting Started - LOVE](https://love2d.org/wiki/Getting_Started)
 
-## Playing RetroLove Games ##
+## Playing RetroLove ##
 
-Open the game folder with LOVE, or optionally, follow the instructions below to create a .love file.
+Open the src folder with LOVE, or optionally, follow the instructions below to create a .love file.
 
 ### Asteroids ###
 
@@ -56,8 +56,8 @@ Touch Controls (Android/iOS only):
 * Move Down: Bottom Corner (Left or Right)
 * Pause / Start: Top Center
 
-## Building RetroLove Games ##
+## Building RetroLove ##
 
-On Windows you can use the build.cmd script in each game folder to package the game into a .love file.
+On Windows you can use the build.cmd script to create a retrolove.love file.
 
-Copyright (c) 2017 Jon Thysell
+Copyright (c) 2017-2018 Jon Thysell
