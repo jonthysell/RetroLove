@@ -303,6 +303,7 @@ function Breakout:updateGame(dt, input)
                 -- Load next stage
                 love.audio.play(self.startSFX)
                 self.paddle.stage = self.paddle.stage + 1
+                self:saveState()
                 self:resetPaddle()
                 self:resetStage()
             end

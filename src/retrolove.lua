@@ -13,6 +13,9 @@ function retrolove.load()
 
     local breakout = require "breakout.breakout"
     retrolove.mainMenu:addGame(breakout.Breakout:new({}))
+
+    local asteroids = require "asteroids.asteroids"
+    retrolove.mainMenu:addGame(asteroids.Asteroids:new({}))
     
     retrolove.currentGame = retrolove.mainMenu
     retrolove.currentGame:init()
