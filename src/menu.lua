@@ -85,6 +85,12 @@ function Menu:drawGame()
     end
 
     love.graphics.setColor({255, 255, 255, 255})
+
+    -- Draw Debug Info
+    if self.debugMode then
+        local fpsText = "FPS: "..tostring(love.timer.getFPS())
+        love.graphics.print(fpsText, self.resWidth - (font:getWidth(fpsText) + self.margin / 4), self.resHeight - self.margin + ((self.margin - font:getHeight(fpsText)) / 2))
+    end
 end
 
 function Menu:exitGame()

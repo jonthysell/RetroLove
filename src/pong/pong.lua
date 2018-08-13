@@ -16,8 +16,6 @@ function Pong:initGame()
     self:resetPaddles()
     self:resetBall()
 
-    love.graphics.setFont(love.graphics.newFont(self.margin * .7))
-
     -- Init sounds
     self.bounceSFX = love.audio.newSource("pong/bounce.ogg", "static")
     self.hitSFX = love.audio.newSource("pong/hit.ogg", "static")

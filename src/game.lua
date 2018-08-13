@@ -66,7 +66,13 @@ function Game:draw()
         self:drawGame()
 
         love.graphics.setCanvas()
-        love.graphics.clear({0, 0, 0, 255})
+
+        if self.debugMode then
+            love.graphics.clear({255, 0, 0, 255})
+        else
+            love.graphics.clear({0, 0, 0, 255})
+        end
+
         love.graphics.draw(self.canvas, self.canvasOriginX, self.canvasOriginY, 0, self.scale, self.scale)
 
         if self.drawOverlay then self:drawOverlay() end
@@ -100,9 +106,9 @@ function Game:resize()
     self.screenWidth = love.graphics.getWidth()
     self.screenHeight = love.graphics.getHeight()
 
-    self.scale = math.min(self.screenWidth / self.resWidth, self.screenHeight / self.resHeight)
-    self.canvasOriginX = (self.screenWidth - self.resWidth * self.scale) / 2
-    self.canvasOriginY = (self.screenHeight - self.resHeight * self.scale) / 2
+    self.scale = math.floor(math.min(self.screenWidth / self.resWidth, self.screenHeight / self.resHeight))
+    self.canvasOriginX = math.floor(0.5 + ((self.screenWidth - self.resWidth * self.scale) / 2))
+    self.canvasOriginY = math.floor(0.5 + ((self.screenHeight - self.resHeight * self.scale) / 2))
 end
 
 function Game:exit()

@@ -360,7 +360,7 @@ function Asteroids:updateGame(dt, input)
             end
         elseif self.ship.isAlive and self.ship.shieldTimeRemaining > 0 then
             self.ship.shieldTimeRemaining = self.ship.shieldTimeRemaining - dt
-        elseif not ship.isAlive then
+        elseif not self.ship.isAlive then
             self.ship.deathTimeRemaining = self.ship.deathTimeRemaining - dt
         end
 
