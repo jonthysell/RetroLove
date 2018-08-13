@@ -50,7 +50,9 @@ end
 function retrolove.switchGame(game)
     if game then
         print("Switching to "..game.id)
+        local debugMode = retrolove.currentGame.debugMode
         retrolove.currentGame = game
+        retrolove.currentGame.debugMode = debugMode
         retrolove.currentGame:init()
     else
         print("Exiting...")

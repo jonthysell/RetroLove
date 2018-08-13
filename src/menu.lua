@@ -25,6 +25,7 @@ function Menu:keyReleasedGame(key)
 end
 
 function Menu:touchReleasedGame(id, x, y, dx, dy, pressure)
+    local gameClick = false
     if x > self.canvasOriginX and x < self.canvasOriginX + self.resWidth * self.scale then
         -- on the canvas
         local boxSize = self.boxSize
@@ -48,7 +49,16 @@ function Menu:touchReleasedGame(id, x, y, dx, dy, pressure)
                 else
                     self.selectedGame = i
                 end
+                gameClick = true
                 break;
+            end
+        end
+    end
+
+    if not gameClick then
+        if x > self.screenWidth * .4 and x < self.screenWidth * .6 then
+            if y > self.screenHeight / 2 then
+                self.debugMode = not self.debugMode
             end
         end
     end
