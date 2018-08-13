@@ -31,25 +31,24 @@ function Menu:touchReleasedGame(id, x, y, dx, dy, pressure)
         local boxSize = self.boxSize
         local boxTop = (self.resHeight - boxSize) / 2
         local boxLeftMargin = self.boxLeftMargin
-        local boxRect = {}
 
         for i = 1, #self.games do
             local boxX = self.margin + (i * boxLeftMargin) + ((i - 1) * boxSize)
 
             local scaledRect = {
-                x = boxX * self.scale,
-                y = boxTop * self.scale,
+                x = self.canvasOriginX + boxX * self.scale,
+                y = self.canvasOriginY + boxTop * self.scale,
                 width = boxSize * self.scale,
                 height = boxSize * self.scale,
             }
 
             if x > scaledRect.x and x < scaledRect.x + scaledRect.width and y > scaledRect.y and y < scaledRect.y + scaledRect.height then
+                gameClick = true
                 if self.selectedGame == i then
                     self:clickCursor()
                 else
                     self.selectedGame = i
                 end
-                gameClick = true
                 break;
             end
         end
