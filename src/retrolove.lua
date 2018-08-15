@@ -16,8 +16,10 @@ function retrolove.load()
 
     local asteroids = require "asteroids.asteroids"
     retrolove.mainMenu:addGame(asteroids.Asteroids:new({}))
-    
-    retrolove.currentGame = retrolove.mainMenu
+
+    local splash = require "splash"
+    retrolove.currentGame = splash.Splash:new({nextGame = retrolove.mainMenu})
+
     retrolove.currentGame:init()
 end
 
@@ -51,8 +53,9 @@ function retrolove.switchGame(game)
     if game then
         print("Switching to "..game.id)
         local debugMode = retrolove.currentGame.debugMode
+        game.debugMode = debugMode
+
         retrolove.currentGame = game
-        retrolove.currentGame.debugMode = debugMode
         retrolove.currentGame:init()
     else
         print("Exiting...")

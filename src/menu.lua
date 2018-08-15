@@ -5,7 +5,8 @@ local game = require "game"
 
 local Menu = game.Game:new({
     id = "menu",
-    title = "Menu",
+    title = "RetroLove Menu",
+    caption = "Made with LÖVE",
     games = {},
     selectedGame = 0,
     boxSize = 80,
@@ -68,8 +69,12 @@ function Menu:drawGame()
     local font = love.graphics.getFont()
 
     love.graphics.setColor({255, 255, 255, 255})
-    local titleText = tostring("RetroLove")
-    love.graphics.print(titleText, (self.resWidth - font:getWidth(titleText)) / 2, 2 * self.margin)
+
+    local titleText = tostring(self.title)
+    love.graphics.print(titleText, (self.resWidth - font:getWidth(titleText)) / 2, (self.resHeight - font:getHeight(titleText)) * 0.1)
+
+    local captionText = tostring(self.caption)
+    love.graphics.print(captionText, (self.resWidth - font:getWidth(captionText)) / 2, (self.resHeight - font:getHeight(captionText)) * 0.9)
 
     if #self.games > 0 then
         local boxSize = self.boxSize
@@ -132,7 +137,14 @@ end
 function Menu:clickCursor()
     if self.selectedGame > 0 then
         local retrolove = require "retrolove"
-        retrolove.switchGame(self.games[self.selectedGame])
+        local splash = require "splash"
+
+        local nextGame = self.games[self.selectedGame]
+
+        retrolove.switchGame(splash.Splash:new({
+            title = "Loading "..nextGame.title.."...",
+            nextGame = nextGame,
+        }))
     end
 end
 
